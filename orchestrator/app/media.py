@@ -18,6 +18,7 @@ import httpx
 from .config import settings
 from .providers import base as providers
 from .providers import image as image_providers
+from .visual_prompts import compact_english_prompt
 
 
 # ---------- voice-api (local registry back-compat; the engine composes voice
@@ -151,6 +152,10 @@ def generate_character_images(descriptor: str, style: str = "", seed: int | None
     if not settings.IMAGE_ENABLED or not descriptor.strip():
         return None
     try:
+        if settings.IMAGE_PROMPT_WORDS > 0:
+            descriptor = compact_english_prompt(
+                descriptor, settings.IMAGE_PROMPT_WORDS, style=style, character=True)
+            style = ""
         with _RENDER_GATE:
             return _provider().character_set(descriptor, style, seed=seed)
     except Exception:
@@ -186,6 +191,8 @@ def generate_scene_image(prompt: str, seed: int | None = None,
     if not settings.IMAGE_ENABLED or not prompt.strip():
         return None
     try:
+        if settings.IMAGE_PROMPT_WORDS > 0:
+            prompt = compact_english_prompt(prompt, settings.IMAGE_PROMPT_WORDS)
         with _RENDER_GATE:
             return _provider().generate(
                 prompt, (width or settings.IMAGE_SCENE_W, height or settings.IMAGE_SCENE_H),

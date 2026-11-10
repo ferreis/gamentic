@@ -1,0 +1,16 @@
+FROM python:3.12-slim
+
+ENV PYTHONUNBUFFERED=1 OMP_NUM_THREADS=4 MKL_NUM_THREADS=4
+RUN apt-get update && apt-get install -y --no-install-recommends git libgl1 libglib2.0-0 libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app/ComfyUI
+# Versão fixa, com os nós padrão usados pelo workflow SD-Turbo.
+RUN git init && git remote add origin https://github.com/comfyanonymous/ComfyUI.git \
+    && git fetch --depth 1 origin b5c8be8b1db44ded07cb1b437b9f33ebff5848c1 \
+    && git checkout FETCH_HEAD
+ARG TORCH_INDEX=https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir --index-url ${TORCH_INDEX} \
+    torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0
+RUN pip install --no-cache-dir 'transformers>=4.37.2,<5' -r requirements.txt
+EXPOSE 8188
+CMD ["python", "main.py", "--cpu", "--force-fp32", "--listen", "0.0.0.0", "--port", "8188", "--preview-method", "none", "--disable-auto-launch"]

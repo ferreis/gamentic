@@ -68,6 +68,18 @@ def test_generate_returns_image_url():
 
 
 @respx.mock
+def test_model_quality_tags_are_added_without_replacing_the_subject(monkeypatch):
+    from app import config
+    monkeypatch.setattr(config, "PROMPT_SUFFIX", "masterpiece, best quality")
+    _mock_comfy(respx.mock)
+    response = client.post("/image/generate", json={"prompt": "anime officer in a red uniform"})
+    assert response.status_code == 200
+    graph = json.loads(respx.calls[0].request.content)["prompt"]
+    positive = _node_by_title(graph, "Positive Prompt")["inputs"]["text"]
+    assert positive == "anime officer in a red uniform, masterpiece, best quality"
+
+
+@respx.mock
 def test_generate_patches_real_klein_graph():
     route = respx.post(f"{COMFY}/prompt").mock(
         return_value=httpx.Response(200, json={"prompt_id": "pid-9"})

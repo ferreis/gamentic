@@ -1,0 +1,9 @@
+{
+  "models": {"kokoro": "kokoro-v1_0", "tts-1": "kokoro-v1_0", "tts-1-hd": "kokoro-v1_0", "gpt-4o-mini-tts": "kokoro-v1_0"},
+  "voices": {
+    "alloy": "pm_alex", "ash": "pm_santa", "ballad": "pm_santa",
+    "coral": "pf_dora", "echo": "pm_alex", "fable": "pm_santa",
+    "nova": "pf_dora", "onyx": "pm_santa", "sage": "pf_dora",
+    "shimmer": "pf_dora", "verse": "pm_alex", "marin": "pf_dora", "cedar": "pm_alex"
+  }
+}

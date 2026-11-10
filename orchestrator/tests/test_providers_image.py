@@ -63,6 +63,21 @@ def test_comfy_reference_capability_override_degrades_to_plain_t2i(monkeypatch):
     assert "references" not in captured["body"]      # silently dropped, nothing breaks
 
 
+def test_comfy_waits_for_the_configured_render_budget_and_three_character_views(monkeypatch):
+    timeouts = []
+    monkeypatch.setattr(pimage.settings, "IMAGE_GENERATE_TIMEOUT", 450)
+
+    def capture_request(endpoint, **request_options):
+        timeouts.append(request_options["timeout"])
+        return _Resp({"image_url": "/scene.png", "face_url": "/face.png"})
+
+    monkeypatch.setattr(pimage.httpx, "post", capture_request)
+    provider = pimage.get_provider(pbase.resolve("image"))
+    provider.generate("anime palace", (768, 768))
+    provider.character_set("anime officer")
+    assert timeouts == [450, 1350]
+
+
 # ---------- openai ----------
 
 def _openai_env(monkeypatch):

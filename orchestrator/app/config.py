@@ -179,6 +179,8 @@ class Settings:
     # --- Image integration (orchestrator -> image-api, server to server) ---
     IMAGE_API_URL = os.getenv("IMAGE_API_URL", "http://localhost:9001")
     IMAGE_ENABLED = os.getenv("IMAGE_ENABLED", "true").lower() == "true"
+    IMAGE_PROMPT_WORDS = int(os.getenv("IMAGE_PROMPT_WORDS", "0"))
+    IMAGE_GENERATE_TIMEOUT = float(os.getenv("IMAGE_GENERATE_TIMEOUT", "120"))
     # Scene size is orchestrator-owned (sent to /image/generate). Character per-view sizing
     # (square face vs tall body) is image-api-owned; see docs/image/image-service.md.
     # Benchmarked on the box: 768x768 renders in ~5.6s, so scenes default to real quality.

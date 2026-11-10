@@ -221,7 +221,7 @@ def _image_context(conn, gid: str, include_chars: bool, focus: str | None = None
 def _artdirected_prompt(context: str, fallback: str) -> str:
     """One LLM call that writes the image prompt; guarded, with the template as the net."""
     try:
-        reply = llm.chat(prompts.build_image_prompt_messages(context))
+        reply = llm.chat(prompts.build_image_prompt_messages(context), output_language="en")
         text = (reply.content or "").strip()
     except Exception:
         return fallback

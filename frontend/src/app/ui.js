@@ -14,6 +14,7 @@ import { stopMediaWatch } from "./mediastream.js";
 import { closeTagger, doExplain, doGive, onCharAction, openInspect, openTagger, takeSceneAction } from "./playctl.js";
 import { cycleProfileImage, openProfile, switchProfileTab } from "./profilectl.js";
 import { applyMemorySetting, patchGameSettings, updateSetting } from "./settingsctl.js";
+import { loadImageRegeneration, regenerateAllImages } from "./artctl.js";
 import { applySpeakStates, speakBeat } from "./speech.js";
 import { continueStory, stopTurn, takeTurn } from "./turns.js";
 
@@ -283,6 +284,10 @@ export function onAction(act, el) {
       state.settings._return = state.view;
       state.view = "settings";
       render();
+      loadImageRegeneration();
+      break;
+    case "regenerate-all-images":
+      regenerateAllImages();
       break;
     case "close-settings":
     case "go-back":

@@ -20,6 +20,7 @@ import math
 import httpx
 
 from .base import ProviderConfig, fal_queue_run
+from ..config import settings
 
 # View prompts for the cloud character_set path. The comfy unit owns its own
 # 3-view prompting server-side; these only exist for providers without it.
@@ -101,7 +102,7 @@ class ComfyProvider(ImageProvider):
             body["references"] = references
         if seed is not None:
             body["seed"] = seed
-        r = httpx.post(f"{self.cfg.base_url}/image/generate", json=body, timeout=120)
+        r = httpx.post(f"{self.cfg.base_url}/image/generate", json=body, timeout=settings.IMAGE_GENERATE_TIMEOUT)
         r.raise_for_status()
         return r.json()
 
@@ -112,7 +113,8 @@ class ComfyProvider(ImageProvider):
         if seed is not None:
             body["seed"] = seed
         # 3 images; generous time since this runs in a background task.
-        r = httpx.post(f"{self.cfg.base_url}/image/character", json=body, timeout=300)
+        r = httpx.post(f"{self.cfg.base_url}/image/character", json=body,
+                       timeout=max(300, 3 * settings.IMAGE_GENERATE_TIMEOUT))
         r.raise_for_status()
         return r.json()
 

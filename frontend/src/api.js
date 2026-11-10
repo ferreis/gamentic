@@ -96,6 +96,9 @@ export function createApi(backendUrl) {
     // Live game settings: any subset of { difficulty, narrator_gender }.
     patchSettings: (id, payload) =>
       request(`/games/${encodeURIComponent(id)}/settings`, { method: "PATCH", body: payload }),
+    regenerateImages: (id) =>
+      request(`/games/${encodeURIComponent(id)}/images/regenerate`, { method: "POST", body: {} }),
+    imageRegenerationStatus: (id) => request(`/games/${encodeURIComponent(id)}/images/regeneration`),
     // The full-screen character view (traits, moments, memories). Cheap; refetch
     // when opening and after each turn while open.
     characterProfile: (id, cid) =>

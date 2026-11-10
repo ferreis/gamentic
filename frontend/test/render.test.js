@@ -624,6 +624,17 @@ test("settings: autoplay is split and a live game adds difficulty/voice/export",
   assert.equal(game.querySelector('[data-act="export-game"]'), null, "export lives on the library cards, not here");
 });
 
+test("regeneration shows progress and blocks duplicate starts while keeping its scope clear", () => {
+  const rendered = parse(renderApp({ view: "settings", settings: {}, active: {
+    id: "g1", state: SCENE_STATE, beats: [],
+    imageRegeneration: { status: "running", total: 19, completed: 6, failed: 1 },
+  } }));
+  assert.ok(rendered.querySelector('[data-act="regenerate-all-images"]').disabled);
+  assert.equal(rendered.querySelector('progress').getAttribute("value"), "7");
+  assert.equal(rendered.querySelector('progress').getAttribute("max"), "19");
+  assert.match(rendered.querySelector('.art-regeneration').textContent, /História e progresso são preservados/);
+});
+
 test("the library offers Import next to the archive and Export on every card", () => {
   const el = parse(
     renderApp({

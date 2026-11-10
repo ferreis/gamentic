@@ -13,6 +13,7 @@ export const defaultHandlers = [
   http.get(`${API}/health`, () => HttpResponse.json({ status: "ok" })),
   http.get(`${API}/games`, () => HttpResponse.json({ games: GAMES })),
   http.get(`${API}/games/:id/state`, () => HttpResponse.json(makeState())),
+  http.get(`${API}/games/:id/images/regeneration`, () => HttpResponse.json({ status: "idle", total: 0, completed: 0, failed: 0, skipped: 0 })),
   // ?since=<turn_index> is the post-turn late-image poll: nothing new by default
   http.get(`${API}/games/:id/beats`, ({ request }) =>
     new URL(request.url).searchParams.has("since")

@@ -87,6 +87,12 @@ class _View:
 
 def _character_views() -> dict[str, _View]:
     """Per-view framing + size, read from config at call time so env tuning needs no rebuild."""
+    if config.COMPACT_PROMPTS:
+        return {
+            "face": _View("head and shoulders portrait, plain dark background", config.CHAR_FACE_WIDTH, config.CHAR_FACE_HEIGHT),
+            "body_front": _View("single person, full body, front view, plain dark background", config.CHAR_BODY_WIDTH, config.CHAR_BODY_HEIGHT),
+            "body_side": _View("single person, full body, side view, plain dark background", config.CHAR_BODY_WIDTH, config.CHAR_BODY_HEIGHT),
+        }
     return {
         "face": _View(
             "head-and-shoulders portrait, face clearly visible, looking at the camera, "
@@ -203,6 +209,8 @@ async def _render(
             status_code=503,
             detail=_template_error or f"workflow template not found at {config.WORKFLOW_TEMPLATE}",
         )
+    if config.PROMPT_SUFFIX:
+        prompt = f"{prompt}, {config.PROMPT_SUFFIX}"
     try:
         if reference_filenames:
             graph = workflow.build_reference_graph(

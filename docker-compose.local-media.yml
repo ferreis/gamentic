@@ -1,0 +1,84 @@
+# Complemento local para computadores sem a GPU AMD da configuração original.
+# CPU para mídia: a GPU de 6 GB permanece disponível ao Ollama.
+services:
+  llm-voice:
+    profiles: ["maya"]
+
+  voice-api:
+    profiles: ["maya"]
+
+  image:
+    build:
+      context: ./infra/comfyui
+      dockerfile: Dockerfile.cpu
+    image: gamentic-comfyui-cpu:local
+    privileged: false
+    devices: !reset []
+    group_add: !reset []
+    environment: !override
+      OMP_NUM_THREADS: "4"
+      MKL_NUM_THREADS: "4"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8188/system_stats')"]
+
+  image-api:
+    environment:
+      WORKFLOW_TEMPLATE: /srv/workflows/sd_turbo_api.json
+      COMFY_UNET_NAME: ""
+      COMFY_CLIP_NAME: ""
+      COMFY_CLIP_TYPE: ""
+      COMFY_VAE_NAME: ""
+      COMFY_LORA_NAME: ""
+      IMAGE_DEFAULT_WIDTH: "512"
+      IMAGE_DEFAULT_HEIGHT: "512"
+      IMAGE_DEFAULT_STEPS: "1"
+      IMAGE_COMPACT_PROMPTS: "true"
+      IMAGE_CHAR_FACE_WIDTH: "384"
+      IMAGE_CHAR_FACE_HEIGHT: "384"
+      IMAGE_CHAR_BODY_WIDTH: "320"
+      IMAGE_CHAR_BODY_HEIGHT: "576"
+      IMAGE_MAX_DIM: "576"
+      IMAGE_MAX_REFERENCES: "0"
+      IMAGE_GENERATE_TIMEOUT: "110"
+
+  kokoro:
+    image: ghcr.io/remsky/kokoro-fastapi-cpu@sha256:f54c5960c2b9387f6349080a9944f8bc7e8cdb98a4ef9238cb0b0f9ff9795f44
+    container_name: gamentic-kokoro
+    restart: unless-stopped
+    environment:
+      USE_GPU: "false"
+      DEFAULT_VOICE: pm_santa
+      DEFAULT_VOICE_CODE: p
+      OMP_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+    volumes:
+      - ./infra/ollama/kokoro-pt-br.json:/app/api/src/core/openai_mappings.json:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8880/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 15
+      start_period: 120s
+    networks:
+      - gamentic
+
+  orchestrator:
+    environment:
+      IMAGE_ENABLED: "true"
+      VOICE_ENABLED: "true"
+      IMAGE_SCENE_W: "512"
+      IMAGE_SCENE_H: "512"
+      IMAGE_VIEW_W: "576"
+      IMAGE_VIEW_H: "384"
+      IMAGE_SUPPORTS_REFERENCES: "false"
+      IMAGE_PROMPT_WORDS: "36"
+      AUDIO_PROVIDER: openai
+      AUDIO_BASE_URL: http://gamentic-kokoro:8880
+      AUDIO_MODEL: kokoro
+      AUDIO_API_KEY: ""
+      AUDIO_EMOTION_MODE: none
+
+  frontend:
+    environment:
+      VOICE_UPSTREAM: http://gamentic-orchestrator:8000
+      VOICE_PATH_PREFIX: /audio

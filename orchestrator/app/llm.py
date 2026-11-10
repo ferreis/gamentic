@@ -35,6 +35,13 @@ RESPONSE_LANGUAGE_REMINDER = (
     "Mantenha as chaves JSON, identificadores e enumerações no formato exigido.]"
 )
 
+IMAGE_LANGUAGE_INSTRUCTION = (
+    "MANDATORY OUTPUT LANGUAGE: English. This is an internal image-generation task, "
+    "not player-facing dialogue. Write visual descriptions in English even when the "
+    "source material is Portuguese. Preserve proper names, JSON keys and identifiers."
+)
+IMAGE_LANGUAGE_REMINDER = "[Internal image task: output English only, preserving the required format.]"
+
 
 @dataclass
 class ToolCall:
@@ -65,21 +72,26 @@ def chat(
     thinking: bool | None = None,
     on_delta=None,
     cancel=None,
+    output_language: str = "pt-BR",
 ) -> LLMReply:
     # Resolved at call time (env -> default), so a .env change lands on the
     # next compose up with no code involved.
     cfg = providers.resolve("text")
+    if output_language not in ("pt-BR", "en"):
+        raise ValueError("unsupported output language")
+    language_instruction = IMAGE_LANGUAGE_INSTRUCTION if output_language == "en" else RESPONSE_LANGUAGE_INSTRUCTION
+    language_reminder = IMAGE_LANGUAGE_REMINDER if output_language == "en" else RESPONSE_LANGUAGE_REMINDER
     localized_messages = [dict(message) for message in messages]
     if localized_messages and localized_messages[0].get("role") == "system":
         localized_messages[0]["content"] = (
-            localized_messages[0]["content"] + "\n\n" + RESPONSE_LANGUAGE_INSTRUCTION
+            localized_messages[0]["content"] + "\n\n" + language_instruction
         )
     else:
-        localized_messages.insert(0, {"role": "system", "content": RESPONSE_LANGUAGE_INSTRUCTION})
+        localized_messages.insert(0, {"role": "system", "content": language_instruction})
     # Small local models also need the language close to the current request.
     for message in reversed(localized_messages):
         if message.get("role") == "user" and isinstance(message.get("content"), str):
-            message["content"] += "\n\n" + RESPONSE_LANGUAGE_REMINDER
+            message["content"] += "\n\n" + language_reminder
             break
     payload: dict = {
         "model": cfg.model,

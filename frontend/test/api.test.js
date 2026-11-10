@@ -16,6 +16,17 @@ function stubFetch(calls) {
   };
 }
 
+test("image regeneration starts asynchronously and its progress can be read", async () => {
+  const calls = [];
+  globalThis.fetch = stubFetch(calls);
+  const api = createApi("http://x:8000");
+  await api.regenerateImages("g/1");
+  await api.imageRegenerationStatus("g/1");
+  assert.equal(calls[0].url, "http://x:8000/games/g%2F1/images/regenerate");
+  assert.equal(calls[0].opts.method, "POST");
+  assert.equal(calls[1].url, "http://x:8000/games/g%2F1/images/regeneration");
+});
+
 test("deleteGame issues a DELETE to /games/{id}", async () => {
   const calls = [];
   globalThis.fetch = stubFetch(calls);

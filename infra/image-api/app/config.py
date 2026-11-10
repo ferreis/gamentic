@@ -45,6 +45,8 @@ LORA_STRENGTH: float = float(os.environ.get("COMFY_LORA_STRENGTH", "1.0") or "1.
 DEFAULT_WIDTH: int = int(os.environ.get("IMAGE_DEFAULT_WIDTH", "768"))
 DEFAULT_HEIGHT: int = int(os.environ.get("IMAGE_DEFAULT_HEIGHT", "768"))
 DEFAULT_STEPS: int = int(os.environ.get("IMAGE_DEFAULT_STEPS", "4"))
+COMPACT_PROMPTS: bool = os.environ.get("IMAGE_COMPACT_PROMPTS", "false").lower() == "true"
+PROMPT_SUFFIX: str = os.environ.get("IMAGE_PROMPT_SUFFIX", "").strip()
 
 # Per-view sizes for /image/character. The image-api OWNS these (the orchestrator sends
 # only descriptor/style/seed): face comes back square, body views come back tall full-body

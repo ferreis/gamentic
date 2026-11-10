@@ -264,7 +264,7 @@ def art_direction(gid: str) -> dict | None:
         messages = prompts.build_artdirector_messages(g, chars, time_of_day=part,
                                                       start_location=start)
     try:
-        reply = llm.chat(messages)
+        reply = llm.chat(messages, output_language="en")
         raw = re.sub(r"^```(?:json)?|```$", "", (reply.content or "").strip(),
                      flags=re.M).strip()
         data = json.loads(raw)

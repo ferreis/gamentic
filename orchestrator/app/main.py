@@ -18,6 +18,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response, StreamingRes
 from . import db, repo, engine, creator, integrate, media, prompts, llm, constants, transfer
 from .engine import live
 from .integrate import events as game_events
+from .integrate import regeneration
 from .config import settings
 from .providers import resolve, voice_enabled
 from .providers import audio as audio_providers
@@ -194,6 +195,30 @@ def get_state(gid: str):
         if not repo.get_game(conn, gid):
             raise HTTPException(404, "game not found")
         return repo.game_state(conn, gid)
+
+
+@app.get("/games/{gid}/images/regeneration")
+def image_regeneration_status(gid: str):
+    with db.get_conn() as conn:
+        if not repo.get_game(conn, gid):
+            raise HTTPException(404, "Aventura não encontrada.")
+    return regeneration.status(gid)
+
+
+@app.post("/games/{gid}/images/regenerate", status_code=202)
+def regenerate_images(gid: str, background_tasks: BackgroundTasks):
+    with db.get_conn() as conn:
+        if not repo.get_game(conn, gid):
+            raise HTTPException(404, "Aventura não encontrada.")
+    if not settings.IMAGE_ENABLED:
+        raise HTTPException(409, "A geração de imagens está desativada.")
+    try:
+        job, batches = regeneration.reserve(gid)
+    except ValueError as error:
+        raise HTTPException(409, str(error)) from error
+    if batches:
+        background_tasks.add_task(regeneration.run, gid, batches)
+    return job
 
 
 @app.delete("/games")

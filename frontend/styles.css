@@ -976,6 +976,7 @@ figure.prose-art.art-loading { cursor: default; }
 
 /* story-memory numeric controls */
 .set-note { margin: 0 0 0.4rem; font-size: 0.78rem; color: var(--ink-muted); line-height: 1.5; }
+.art-regeneration progress { width: 100%; accent-color: var(--accent); }
 .mem-input { width: 7.5rem; text-align: right; font-variant-numeric: tabular-nums; }
 /* turn-pacing selects ride the same control sizing */
 .pace-select { width: 7.5rem; }

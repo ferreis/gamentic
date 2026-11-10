@@ -408,6 +408,8 @@ export function renderGameSettings(g) {
         ${radio("character_images", "often", gs.characterImages, "Frequentemente", "Sempre que o momento valer a pena")}
       </fieldset>
 
+      ${renderArtRegeneration(g)}
+
       <fieldset class="set-group" data-group="turn_pacing">
         <legend class="set-legend">Ritmo do turno</legend>
         <p class="set-note">Defina quantos personagens podem participar de um turno e quantas vezes cada um pode agir. A opção Padrão deixa o narrador definir o ritmo.</p>
@@ -416,6 +418,33 @@ export function renderGameSettings(g) {
       </fieldset>
 
     </section>`;
+}
+
+function renderArtRegeneration(game) {
+  const progress = game.imageRegeneration || {};
+  const running = game.imageRegenerationStarting || progress.status === "running";
+  const completed = Math.max(0, Number(progress.completed) || 0);
+  const failed = Math.max(0, Number(progress.failed) || 0);
+  const total = Math.max(0, Number(progress.total) || 0);
+  const processed = completed + failed + Math.max(0, Number(progress.skipped) || 0);
+  const disabled = running || game.state.imagesEnabled === false;
+  const summary = progress.status === "completed" || progress.status === "partial"
+    ? `${completed} imagens atualizadas.${failed ? ` ${failed} não puderam ser geradas; as anteriores foram mantidas.` : ""}`
+    : progress.status === "failed" ? "A geração foi interrompida. Você pode tentar novamente." : "";
+  return `<fieldset class="set-group art-regeneration">
+    <legend>Arte da aventura</legend>
+    <p class="set-note">Refaz as imagens já geradas com o modelo e o estilo atuais. História e progresso são preservados.</p>
+    <button type="button" class="holo-btn" data-act="regenerate-all-images" ${disabled ? "disabled" : ""}>
+      ${icon("image")}<span>${running ? "Regenerando imagens..." : "Regenerar todas as imagens"}</span>
+    </button>
+    <div role="status" aria-live="polite">
+      ${running && total ? `<p class="set-note">${processed} de ${total} imagens processadas.</p>
+      <progress aria-label="Progresso da regeneração" max="${total}" value="${processed}"></progress>` : ""}
+      ${summary ? `<p class="set-note">${escapeHtml(summary)}</p>` : ""}
+      ${game.imageRegenerationError ? `<p class="set-note">${escapeHtml(game.imageRegenerationError)}</p>` : ""}
+      ${game.state.imagesEnabled === false ? `<p class="set-note">A geração de imagens está desativada.</p>` : ""}
+    </div>
+  </fieldset>`;
 }
 
 // One turn-pacing select: Default (sends 0, back to the narrator's own pace)

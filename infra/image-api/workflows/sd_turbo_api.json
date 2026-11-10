@@ -1,0 +1,13 @@
+{
+  "1": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": "sd_turbo.safetensors"}},
+  "2": {"class_type": "CLIPTextEncode", "_meta": {"title": "Positive Prompt"}, "inputs": {"text": "", "clip": ["1", 1]}},
+  "3": {"class_type": "ConditioningZeroOut", "inputs": {"conditioning": ["2", 0]}},
+  "4": {"class_type": "EmptyLatentImage", "_meta": {"title": "Latent Image"}, "inputs": {"width": 512, "height": 512, "batch_size": 1}},
+  "5": {"class_type": "SDTurboScheduler", "_meta": {"title": "Scheduler"}, "inputs": {"model": ["1", 0], "steps": 1, "denoise": 1.0}},
+  "6": {"class_type": "KSamplerSelect", "inputs": {"sampler_name": "euler_ancestral"}},
+  "7": {"class_type": "RandomNoise", "_meta": {"title": "Noise"}, "inputs": {"noise_seed": 0}},
+  "8": {"class_type": "CFGGuider", "inputs": {"model": ["1", 0], "positive": ["2", 0], "negative": ["3", 0], "cfg": 1.0}},
+  "9": {"class_type": "SamplerCustomAdvanced", "inputs": {"noise": ["7", 0], "guider": ["8", 0], "sampler": ["6", 0], "sigmas": ["5", 0], "latent_image": ["4", 0]}},
+  "10": {"class_type": "VAEDecode", "inputs": {"samples": ["9", 0], "vae": ["1", 2]}},
+  "11": {"class_type": "SaveImage", "inputs": {"images": ["10", 0], "filename_prefix": "gamentic"}}
+}

@@ -18,6 +18,7 @@ import { announceImage, startReveal } from "./reveal.js";
 import { withVoice } from "./speech.js";
 import { lastTurnIndexOf } from "./turns.js";
 import { render } from "./ui.js";
+import { loadImageRegeneration, stopImageRegenerationWatch } from "./artctl.js";
 
 export const FALLBACK_INTERVAL = 60000;
 
@@ -44,7 +45,8 @@ export function watchMedia(g) {
       } catch {
         return; // keepalive noise / malformed line
       }
-      if (ev.kind === "scene" || ev.kind === "portrait") refreshArt(g);
+      if (ev.kind === "image-regeneration") loadImageRegeneration(g);
+      else if (ev.kind === "scene" || ev.kind === "portrait") refreshArt(g);
       else if (ev.kind === "item") {
         refreshArt(g); // the slot thumbnail (pack/scene/carrying) lives in /state
         pullBeats(g); // the unlock card is a beat
@@ -72,6 +74,7 @@ export function watchMedia(g) {
 }
 
 export function stopMediaWatch() {
+  stopImageRegenerationWatch();
   if (stream) stream.close();
   stream = null;
   if (fallbackTimer) clearInterval(fallbackTimer);

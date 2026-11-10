@@ -46,3 +46,32 @@ def test_chat_enforces_portuguese_without_mutating_history(monkeypatch, streamin
     assert sum(message["role"] == "system" for message in captured_payload["messages"]) == 1
     if existing_system:
         assert captured_payload["messages"][0]["content"].startswith(original_messages[0]["content"])
+
+
+@pytest.mark.parametrize("streaming", [False, True])
+def test_internal_image_calls_use_english_without_portuguese_override(monkeypatch, streaming):
+    captured_payload = {}
+    messages = [{"role": "system", "content": "Prepare a visual prompt."},
+                {"role": "user", "content": "Pintura épica de um hangar."}]
+    original_messages = copy.deepcopy(messages)
+
+    def capture_post(endpoint, **request_options):
+        captured_payload.update(request_options["json"])
+        return httpx.Response(200, request=httpx.Request("POST", endpoint), json={
+            "choices": [{"message": {"content": "Epic science-fantasy painting of a hangar."}}],
+        })
+
+    def capture_stream(endpoint, request_options, payload, on_delta, cancel):
+        captured_payload.update(payload)
+        return llm.LLMReply(content="Epic science-fantasy painting of a hangar.")
+
+    monkeypatch.setattr(llm.httpx, "post", capture_post)
+    monkeypatch.setattr(llm, "_stream_chat", capture_stream)
+    monkeypatch.setattr(llm.settings, "LLM_STREAM", True)
+    llm.chat(messages, output_language="en", on_delta=(lambda fragment: None) if streaming else None)
+    serialized_messages = str(captured_payload["messages"])
+    assert llm.IMAGE_LANGUAGE_INSTRUCTION in serialized_messages
+    assert llm.IMAGE_LANGUAGE_REMINDER in serialized_messages
+    assert llm.RESPONSE_LANGUAGE_INSTRUCTION not in serialized_messages
+    assert llm.RESPONSE_LANGUAGE_REMINDER not in serialized_messages
+    assert messages == original_messages
