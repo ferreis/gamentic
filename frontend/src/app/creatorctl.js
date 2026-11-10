@@ -83,7 +83,7 @@ export function resetCreator() {
     messages: [
       {
         role: "builder",
-        text: "Tell me about the world you want to play. A place, a mood, a danger, a companion. I will shape it into a real adventure.",
+        text: "Conte sobre o mundo em que você quer jogar. Um lugar, um clima, um perigo, um companheiro. Eu vou transformá-lo em uma aventura de verdade.",
       },
     ],
   };
@@ -104,7 +104,7 @@ export async function sendCreatorMessage(raw) {
     storeCreatorSession(c.sessionId); // the session now exists server-side
     state.backendOnline = true;
   } catch (err) {
-    c.error = "Could not reach the world-builder: " + (err.message || "offline");
+    c.error = "Não foi possível acessar o criador de mundos: " + (err.message || "offline");
     state.backendOnline = false;
   } finally {
     c.busy = false;
@@ -132,9 +132,9 @@ export async function beginAdventure() {
     c.busy = false;
     c.finalizing = false;
     if (err.status === 409) {
-      c.messages.push({ role: "builder", text: err.message || "I need a little more before we can begin. Keep going." });
+      c.messages.push({ role: "builder", text: err.message || "Preciso de mais alguns detalhes antes de começarmos. Continue." });
     } else {
-      c.error = "Could not start the game: " + (err.message || "offline");
+      c.error = "Não foi possível iniciar o jogo: " + (err.message || "offline");
       state.backendOnline = false;
     }
     render();

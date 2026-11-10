@@ -2,14 +2,14 @@
 
 import { describeSegment } from "../composer.js";
 import { icon } from "../icons.js";
-import { cardCorners, escapeHtml, initials } from "./common.js";
+import { cardCorners, escapeHtml, initials, titleCase } from "./common.js";
 
 // Prompt-token usage as a colored meter: green -> amber -> red as it fills.
 // A PERMANENT HUD element ("12k/128k"), not a debug toggle: it renders whenever
 // the backend sends context, including used=0 before the first turn. The same
 // builder draws the small per-character meters (each character is its own
 // agent context).
-export function contextMeter(ctx, { mini = false, label = "Story memory" } = {}) {
+export function contextMeter(ctx, { mini = false, label = "Memória da história" } = {}) {
   if (!ctx || !ctx.max) return "";
   const pct = Math.round(ctx.ratio * 100);
   const tone = ctx.ratio > 0.85 ? "red" : ctx.ratio > 0.6 ? "amber" : "green";
@@ -36,7 +36,7 @@ export function contextMeter(ctx, { mini = false, label = "Story memory" } = {})
 // Renders in the public story for a composer look, inside the whisper thread
 // for a private study (whisper mode:"look").
 export function renderViewPending() {
-  return `<div class="render-hint" role="status"><span class="art-scan" aria-hidden="true"></span><em>rendering the view...</em></div>`;
+  return `<div class="render-hint" role="status"><span class="art-scan" aria-hidden="true"></span><em>criando a imagem...</em></div>`;
 }
 
 // --- fixed-slot grids (caps are maximums; empty slots show capacity) ---
@@ -57,7 +57,7 @@ export function slotInner(it, imaging = false) {
   }
   // images on but no art yet -> it is still rendering: show the generating shimmer
   if (imaging) {
-    return `<span class="slot-imaging art-loading" role="img" aria-label="Picturing ${escapeHtml(it.name)}"><span class="art-scan" aria-hidden="true"></span></span>`;
+    return `<span class="slot-imaging art-loading" role="img" aria-label="Criando imagem de ${escapeHtml(it.name)}"><span class="art-scan" aria-hidden="true"></span></span>`;
   }
   return `<span class="slot-abbr">${escapeHtml(initials(it.name))}</span>`;
 }
@@ -68,7 +68,7 @@ export function slotTip(it) {
 
 // inventory display slot (player / character): tappable -> the inspect modal
 export function filledSlot(it, imaging = false) {
-  return `<button type="button" class="slot filled" data-act="inspect-item" data-item-id="${escapeHtml(it.id || "")}" data-item-name="${escapeHtml(it.name)}" title="${escapeHtml(slotTip(it))}" aria-label="Inspect ${escapeHtml(it.name)}">${slotInner(it, imaging)}</button>`;
+  return `<button type="button" class="slot filled" data-act="inspect-item" data-item-id="${escapeHtml(it.id || "")}" data-item-name="${escapeHtml(it.name)}" title="${escapeHtml(slotTip(it))}" aria-label="Inspecionar ${escapeHtml(it.name)}">${slotInner(it, imaging)}</button>`;
 }
 
 // scene-item slot: tappable -> the inspect modal (which offers Take for loose
@@ -79,7 +79,7 @@ export function sceneItemSlot(it, imaging = false) {
   const tag = it.fixed
     ? `<span class="slot-tag fixed" aria-hidden="true">${icon("landmark")}</span>`
     : `<span class="slot-tag loot" aria-hidden="true">${icon("plus")}</span>`;
-  return `<button type="button" class="slot filled item-${kind}" data-act="inspect-item" data-item-id="${escapeHtml(it.id || "")}" data-item-name="${escapeHtml(it.name)}" title="${escapeHtml(slotTip(it))}" aria-label="Inspect ${escapeHtml(it.name)}">${slotInner(it, imaging)}${tag}</button>`;
+  return `<button type="button" class="slot filled item-${kind}" data-act="inspect-item" data-item-id="${escapeHtml(it.id || "")}" data-item-name="${escapeHtml(it.name)}" title="${escapeHtml(slotTip(it))}" aria-label="Inspecionar ${escapeHtml(it.name)}">${slotInner(it, imaging)}${tag}</button>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -88,16 +88,16 @@ export function sceneItemSlot(it, imaging = false) {
 // into tagged segments with refs on submit. Look is a first-class action: an
 // optional "look at what?" line (empty = study the whole scene).
 // ---------------------------------------------------------------------------
-export const MODE_LABELS = { do: "Do", say: "Say", look: "Look" };
+export const MODE_LABELS = { do: "Fazer", say: "Dizer", look: "Olhar" };
 
-export const MODE_ARIA = { do: "What you do", say: "What you say", look: "What you look at" };
+export const MODE_ARIA = { do: "O que você faz", say: "O que você diz", look: "O que você observa" };
 
 export function renderComposer({ id, mode, locked, modes = ["do", "say"], placeholders, submitLabel }) {
   const dis = locked ? "disabled" : "";
   const ph = placeholders[mode] || placeholders.do;
   return `
     <div class="composer">
-      <div class="composer-modes" role="group" aria-label="Line kind">
+      <div class="composer-modes" role="group" aria-label="Tipo de linha">
         ${modes
           .map(
             (m) =>
@@ -107,11 +107,11 @@ export function renderComposer({ id, mode, locked, modes = ["do", "say"], placeh
       </div>
       <div class="composer-input holo-input" id="${id}Input" contenteditable="${locked ? "false" : "true"}"
            role="textbox" aria-multiline="false" aria-label="${MODE_ARIA[mode] || MODE_ARIA.do}"
-           data-placeholder="${escapeHtml(locked ? "The narrator is thinking..." : ph)}"></div>
+           data-placeholder="${escapeHtml(locked ? "O narrador está pensando..." : ph)}"></div>
       <button type="button" class="holo-icon tag-btn" data-act="open-tagger" data-scope="${id}"
-              title="Tag a character or item" aria-label="Tag a character or item" ${dis}>${icon("at")}</button>
+              title="Marcar personagem ou item" aria-label="Marcar personagem ou item" ${dis}>${icon("at")}</button>
       <button type="button" class="holo-icon stack-btn" data-act="${id}-stack"
-              title="Stack this line to send several at once" aria-label="Stack this line" ${dis}>${icon("plus")}</button>
+              title="Empilhar esta linha para enviar várias de uma vez" aria-label="Empilhar esta linha" ${dis}>${icon("plus")}</button>
       <button class="holo-btn" type="submit" ${dis}>${icon("send")}<span>${submitLabel}</span></button>
     </div>`;
 }
@@ -120,12 +120,12 @@ export function renderComposer({ id, mode, locked, modes = ["do", "say"], placeh
 // waiting to execute, removable until sent.
 export function renderStack(stack, scope) {
   if (!stack || !stack.length) return "";
-  return `<div class="seg-stack" aria-label="Stacked lines">
+  return `<div class="seg-stack" aria-label="Linhas empilhadas">
     ${stack
       .map(
         (seg, i) =>
           `<span class="seg-row seg-${escapeHtml(seg.type)}">${escapeHtml(describeSegment(seg))}
-             <button type="button" class="seg-del" data-act="${scope}-unstack" data-index="${i}" aria-label="Remove stacked line">${icon("x")}</button>
+             <button type="button" class="seg-del" data-act="${scope}-unstack" data-index="${i}" aria-label="Remover linha empilhada">${icon("x")}</button>
            </span>`,
       )
       .join("")}
@@ -134,8 +134,13 @@ export function renderStack(stack, scope) {
 
 // A character offer button (Give..., Provoke, narrator offers). Lives with
 // the widgets: the profile renders these now (cards just hint at the panel).
+function actionLabel(action) {
+  const labels = { "Look around": "Olhar ao redor", Search: "Procurar", Talk: "Conversar", "Give...": "Dar...", Provoke: "Provocar" };
+  return labels[action.label] || action.label;
+}
+
 export function sceneActionBtn(a, locked) {
-  return `<button type="button" class="chip-btn" data-act="scene-action" data-type="${escapeHtml(a.type)}" data-label="${escapeHtml(a.label)}" ${locked ? "disabled" : ""}>${escapeHtml(a.label)}</button>`;
+  return `<button type="button" class="chip-btn" data-act="scene-action" data-type="${escapeHtml(a.type)}" data-label="${escapeHtml(a.label)}" ${locked ? "disabled" : ""}>${escapeHtml(actionLabel(a))}</button>`;
 }
 
 export function exitBtn(e, locked) {
@@ -144,7 +149,7 @@ export function exitBtn(e, locked) {
 }
 
 export function charActionBtn(a, c, locked) {
-  return `<button type="button" class="chip-btn" data-act="char-action" data-type="${escapeHtml(a.type)}" data-label="${escapeHtml(a.label)}" data-char-id="${escapeHtml(c.id)}" data-char-name="${escapeHtml(c.name)}" ${locked ? "disabled" : ""}>${escapeHtml(a.label)}</button>`;
+  return `<button type="button" class="chip-btn" data-act="char-action" data-type="${escapeHtml(a.type)}" data-label="${escapeHtml(a.label)}" data-char-id="${escapeHtml(c.id)}" data-char-name="${escapeHtml(c.name)}" ${locked ? "disabled" : ""}>${escapeHtml(actionLabel(a))}</button>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -204,7 +209,7 @@ export function relationBadge(text) {
 }
 
 export function dispBadge(disposition) {
-  return `<span class="disp-badge disp-${escapeHtml(disposition)}">${escapeHtml(disposition)}</span>`;
+  return `<span class="disp-badge disp-${escapeHtml(disposition)}">${escapeHtml(titleCase(disposition))}</span>`;
 }
 
 export function dispositionBadges(c) {
@@ -270,7 +275,7 @@ export function iconBtn({ act, icon: iconName, label, title, cls = "", data = {}
 // it does not. Lives in the menu header and the library header.
 export function hudStat(online) {
   return `<span class="hud-stat ${online ? "ok" : "down"}">
-          <span class="stat-dot"></span>${online ? "SYSTEM ONLINE" : "LINK LOST"}
+          <span class="stat-dot"></span>${online ? "SISTEMA ONLINE" : "CONEXÃO PERDIDA"}
         </span>`;
 }
 

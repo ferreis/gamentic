@@ -1,0 +1,10 @@
+# Ponte para o Ollama instalado no host Linux e restrito a 127.0.0.1.
+# Escuta apenas na interface interna do Docker, sem publicar na rede local.
+services:
+  ollama-proxy:
+    image: nginx:1.27-alpine
+    container_name: gamentic-ollama-proxy
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - ./infra/ollama/nginx.conf:/etc/nginx/conf.d/default.conf:ro

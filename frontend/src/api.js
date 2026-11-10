@@ -47,7 +47,7 @@ export function createApi(backendUrl) {
         attempt.catch(() => {}); // losing the race must never surface as unhandled
         const hang = new Promise((_, reject) => {
           timer = setTimeout(
-            () => reject(new ApiError("The backend is taking too long to answer. Try again.", { status: 0 })),
+            () => reject(new ApiError("O servidor está demorando demais para responder. Tente novamente.", { status: 0 })),
             timeout,
           );
         });
@@ -56,7 +56,7 @@ export function createApi(backendUrl) {
     } catch (networkError) {
       if (networkError instanceof ApiError) throw networkError;
       // fetch rejects only on network failure / CORS / offline.
-      throw new ApiError(networkError.message || "Backend unreachable", { status: 0 });
+      throw new ApiError(networkError.message || "Servidor inacessível", { status: 0 });
     } finally {
       if (timer) clearTimeout(timer);
     }
@@ -146,5 +146,5 @@ function errorDetail(payload, response) {
   } else if (d != null && String(d).trim()) {
     return String(d);
   }
-  return response.statusText || "Request failed";
+  return response.statusText || "A solicitação falhou";
 }

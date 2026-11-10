@@ -56,7 +56,7 @@ test("a hung request rejects with a friendly timeout ApiError instead of busy-lo
     const rejected = assert.rejects(promise, (err) => {
       assert.ok(err instanceof ApiError);
       assert.equal(err.status, 0);
-      assert.match(err.message, /taking too long/i);
+      assert.match(err.message, /demorando demais/i);
       return true;
     });
     await vi.advanceTimersByTimeAsync(21000); // past the read budget
@@ -110,7 +110,7 @@ test("plain reads still fail fast: the no-ceiling change is LLM-bound calls only
     globalThis.fetch = () => new Promise(() => {});
     const rejected = assert.rejects(createApi("http://x:8000").getState("g1"), (err) => {
       assert.ok(err instanceof ApiError);
-      assert.match(err.message, /taking too long/i);
+      assert.match(err.message, /demorando demais/i);
       return true;
     });
     await vi.advanceTimersByTimeAsync(21000);

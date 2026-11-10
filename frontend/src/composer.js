@@ -126,16 +126,16 @@ export function describeSegment(seg) {
   const verb =
     seg.type === "conversation"
       ? seg.mode === "do"
-        ? "Discreetly"
+        ? "Discretamente"
         : seg.mode === "look"
-          ? "Study"
-          : "Whisper"
+          ? "Observar"
+          : "Sussurrar"
       : seg.type === "look"
-        ? "Look"
+        ? "Olhar"
         : seg.type === "say"
-          ? "Say"
-          : "Do";
+          ? "Dizer"
+          : "Fazer";
   const target = seg.target ? ` -> ${seg.target}` : "";
-  const fallback = seg.type === "look" ? "the whole scene" : seg.type === "conversation" && seg.mode === "look" ? "them, quietly" : "";
+  const fallback = seg.type === "look" ? "toda a cena" : seg.type === "conversation" && seg.mode === "look" ? "a pessoa, discretamente" : "";
   return `${verb}${target}: ${seg.text || fallback}`;
 }

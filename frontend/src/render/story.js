@@ -15,7 +15,7 @@ export function renderStory(g) {
   const artCard = sceneArtCard(g.state);
 
   if (!beats.length) {
-    return artCard + `<p class="story-prose muted">The story has not begun yet.</p>`;
+    return artCard + `<p class="story-prose muted">A história ainda não começou.</p>`;
   }
 
   // window very long logs so the DOM does not grow unbounded (perf requirement)
@@ -73,14 +73,14 @@ export function sceneArtCard(s) {
     // the whole figure opens the scene's inspect sheet (the title's behavior -
     // big art + description; its image lightboxes from there). Owner: clicking
     // the art should do exactly what clicking the title does.
-    return `<figure class="prose-art" data-act="inspect-scene" role="button" tabindex="0" aria-label="What this place is">
+    return `<figure class="prose-art" data-act="inspect-scene" role="button" tabindex="0" aria-label="O que é este lugar">
               ${cardCorners()}
               ${artImg({ url: scene.imageUrl, alt: name, caption })}
               ${name ? `<figcaption>${escapeHtml(name)}</figcaption>` : ""}
             </figure>`;
   }
   if (s.imagesEnabled) {
-    return artLoading("prose-art", "visual manifesting...", "Scene art is being painted", "figure");
+    return artLoading("prose-art", "imagem surgindo...", "A imagem da cena está sendo criada", "figure");
   }
   return "";
 }
@@ -113,13 +113,13 @@ export function renderImageBeat(beat) {
   if (beat.speaker === "system") {
     return `<figure class="beat-image item-card" data-beat-id="${escapeHtml(beat.id)}">
               ${cardCorners()}
-              ${artImg({ url: beat.imageUrl, alt: beat.text || "A new item" })}
-              <figcaption>${icon("gem")}<span>${escapeHtml(beat.text || "New item")}</span></figcaption>
+              ${artImg({ url: beat.imageUrl, alt: beat.text || "Um novo item" })}
+              <figcaption>${icon("gem")}<span>${escapeHtml(beat.text || "Novo item")}</span></figcaption>
             </figure>`;
   }
   return `<figure class="beat-image" data-beat-id="${escapeHtml(beat.id)}">
             ${cardCorners()}
-            ${artImg({ url: beat.imageUrl, alt: beat.text || "The scene as it is right now" })}
+            ${artImg({ url: beat.imageUrl, alt: beat.text || "A cena como está agora" })}
             ${beat.text ? `<figcaption>${escapeHtml(beat.text)}</figcaption>` : ""}
           </figure>`;
 }
@@ -163,12 +163,12 @@ export function playerSpeech(beat) {
 // An optimistic (pending) echo renders slightly dimmed until the turn lands.
 export function renderPlayerSpeech(beat, sp) {
   const whisper = sp.verb === "whisper";
-  const meta = sp.target ? `${whisper ? "whispered to" : "to"} ${sp.target}` : whisper ? "whispered" : "";
+  const meta = sp.target ? `${whisper ? "sussurrou para" : "para"} ${sp.target}` : whisper ? "sussurrou" : "";
   return `
     <article class="dialogue from-player${whisper ? " whispered" : ""}${beat.pending ? " pending" : ""}" data-beat-id="${escapeHtml(beat.id)}" style="--speaker:${PLAYER_COLOR}">
-      <span class="bubble-avatar fallback you" style="background:${PLAYER_COLOR}">YOU</span>
+      <span class="bubble-avatar fallback you" style="background:${PLAYER_COLOR}">VOCÊ</span>
       <div class="bubble">
-        <span class="bubble-name">You${meta ? ` <i class="bubble-meta">${escapeHtml(meta)}</i>` : ""}</span>
+        <span class="bubble-name">Você${meta ? ` <i class="bubble-meta">${escapeHtml(meta)}</i>` : ""}</span>
         <p>${escapeHtml(sp.quote)}</p>
       </div>
     </article>`;
@@ -200,7 +200,7 @@ export function renderNarration(beat, embed = "") {
 export function renderDialogue(beat, g) {
   const ch = (g.state.characters || []).find((c) => c.id === beat.speaker);
   const color = (ch && ch.color) || "var(--gold)";
-  const name = beat.speakerName || (ch && ch.name) || "Someone";
+  const name = beat.speakerName || (ch && ch.name) || "Alguém";
   const avatar = avatarOrInitials({
     url: ch && ch.faceUrl,
     name,
@@ -230,13 +230,13 @@ export function renderPlayerAction(beat) {
 // "Obtained: brass key" opens the inspect modal to ask what it was about.
 export function renderSystem(beat) {
   const tone = systemTone(beat.text);
-  return `<button type="button" class="system-badge ${tone}" data-beat-id="${escapeHtml(beat.id)}" data-act="inspect-beat" role="status" title="Tap to inspect">
+  return `<button type="button" class="system-badge ${tone}" data-beat-id="${escapeHtml(beat.id)}" data-act="inspect-beat" role="status" title="Toque para inspecionar">
             ${icon(systemIcon(tone))}<span>${escapeHtml(beat.text)}</span>
           </button>`;
 }
 
 export function speakBtn(beat) {
-  return `<button type="button" class="speak-btn" data-act="speak-beat" data-beat-id="${escapeHtml(beat.id)}" aria-label="Play voice" title="Play voice">${icon("volume2")}</button>`;
+  return `<button type="button" class="speak-btn" data-act="speak-beat" data-beat-id="${escapeHtml(beat.id)}" aria-label="Reproduzir voz" title="Reproduzir voz">${icon("volume2")}</button>`;
 }
 
 // ---------------------------------------------------------------------------

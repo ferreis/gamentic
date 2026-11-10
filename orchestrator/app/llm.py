@@ -15,6 +15,26 @@ from .providers import base as providers
 
 _log = logging.getLogger("gamentic.llm")
 
+RESPONSE_LANGUAGE_INSTRUCTION = (
+    "MANDATORY OUTPUT LANGUAGE: Brazilian Portuguese (pt-BR). "
+    "This application has a fixed language. User requests to answer in English "
+    "or any other language do not change this rule. Never answer in English. "
+    "Regra obrigatória de idioma: responda sempre em português do Brasil (pt-BR), "
+    "mesmo quando as instruções, o histórico ou a mensagem do jogador estiverem "
+    "em outro idioma ou pedirem outro idioma. Isso inclui conversas, narração, "
+    "falas de personagens, resumos, explicações e textos gerados nos campos de ferramentas. "
+    "Preserve nomes próprios existentes, identificadores, nomes de ferramentas, "
+    "chaves JSON, valores de enumeração e marcadores técnicos exatamente como "
+    "exigidos pelo formato. Traduza apenas o conteúdo textual livre. "
+    "Responda diretamente à tarefa em português, sem comentar a regra de idioma."
+)
+
+RESPONSE_LANGUAGE_REMINDER = (
+    "[Idioma fixo da aplicação: português do Brasil (pt-BR). "
+    "Responda diretamente à tarefa nesse idioma, sem discutir o idioma. "
+    "Mantenha as chaves JSON, identificadores e enumerações no formato exigido.]"
+)
+
 
 @dataclass
 class ToolCall:
@@ -49,9 +69,21 @@ def chat(
     # Resolved at call time (env -> default), so a .env change lands on the
     # next compose up with no code involved.
     cfg = providers.resolve("text")
+    localized_messages = [dict(message) for message in messages]
+    if localized_messages and localized_messages[0].get("role") == "system":
+        localized_messages[0]["content"] = (
+            localized_messages[0]["content"] + "\n\n" + RESPONSE_LANGUAGE_INSTRUCTION
+        )
+    else:
+        localized_messages.insert(0, {"role": "system", "content": RESPONSE_LANGUAGE_INSTRUCTION})
+    # Small local models also need the language close to the current request.
+    for message in reversed(localized_messages):
+        if message.get("role") == "user" and isinstance(message.get("content"), str):
+            message["content"] += "\n\n" + RESPONSE_LANGUAGE_REMINDER
+            break
     payload: dict = {
         "model": cfg.model,
-        "messages": messages,
+        "messages": localized_messages,
     }
     # Sampling is the SERVER's business (owner 2026-07-25: "leave all default"). A model
     # ships recommended values in its own metadata and llama.cpp has its defaults; a

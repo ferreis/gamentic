@@ -137,7 +137,7 @@ test("while generating, the lock is PARTIAL: composer locked, read-only surfaces
 test("play view with state not yet loaded renders a loading screen (no crash)", () => {
   const el = parse(renderApp({ view: "play", active: { id: "g1", state: null, beats: [], generating: true } }));
   assert.ok(el.querySelector(".play-loading"), "loading screen shown while state is null");
-  assert.ok(/loading/i.test(el.textContent));
+  assert.ok(/carregando/i.test(el.textContent));
 });
 
 const SCENE_STATE = mapGameState({
@@ -276,13 +276,13 @@ test("the profile is TABBED: Profile/Traits/Memory/Whisper, with the status shee
   assert.equal(screen.querySelector(".profile-tab.active").dataset.tab, "profile");
   // the default Profile tab is the status sheet: identity, gender, description, carrying
   assert.ok(screen.querySelector(".disp-badge"), "disposition on the status sheet");
-  assert.ok([...screen.querySelectorAll(".ins-tag")].some((t) => t.textContent === "male"), "gender tag shown when set");
+  assert.ok([...screen.querySelectorAll(".ins-tag")].some((t) => t.textContent === "Masculino"), "gender tag shown when set");
   assert.ok(/Bartender/.test(screen.querySelector(".profile-pane").textContent), "description on the status sheet");
   // "Their past": the origin pieces learned so far, stamped like traits
   const origin = screen.querySelector(".origin-list .trait.origin");
   assert.ok(origin, "origin entry on the status sheet");
   assert.ok(/ran corp security/.test(origin.textContent));
-  assert.ok(/learned: Day 2, night/.test(origin.querySelector(".trait-stamp").textContent));
+  assert.ok(/descoberto: Day 2, night/.test(origin.querySelector(".trait-stamp").textContent));
   const inv = screen.querySelector(".char-inv");
   assert.ok(inv, "carrying lives on the status sheet");
   assert.ok(inv.children[0].classList.contains("inv-mini-label"), "label row above the items row");
@@ -299,7 +299,7 @@ test("the Traits tab lists the unlocked traits with their stamps", () => {
   const el = parse(renderApp(profileOpen(PROFILE_DATA, { tab: "traits" })));
   const trait = el.querySelector(".profile-pane .trait");
   assert.ok(/distrusts authority/.test(trait.textContent));
-  assert.ok(/unlocked: Day 2, evening/.test(trait.querySelector(".trait-stamp").textContent));
+  assert.ok(/revelado: Day 2, evening/.test(trait.querySelector(".trait-stamp").textContent));
 });
 
 test("the Memories tab: image strip with FULL concept captions + the pivotal-event timeline", () => {
@@ -345,7 +345,7 @@ test("the scene inspect sheet shows the place's deeper story when the narrator h
   });
   const el = parse(renderApp({ view: "play", active: { id: "gb", state: withBg, beats: [], generating: false, inspect: { kind: "scene", key: "Vault" } } }));
   const modal = el.querySelector(".inspect-modal");
-  assert.ok(/What this place is/.test(modal.textContent), "background section title");
+  assert.ok(/O que é este lugar/.test(modal.textContent), "background section title");
   assert.ok(/seed bank, looted in the first winter/.test(modal.querySelector(".scene-background").textContent));
   // empty background -> the section is omitted
   const noBg = mapGameState({
@@ -355,7 +355,7 @@ test("the scene inspect sheet shows the place's deeper story when the narrator h
     characters: [],
   });
   const el2 = parse(renderApp({ view: "play", active: { id: "gb2", state: noBg, beats: [], generating: false, inspect: { kind: "scene", key: "Vault" } } }));
-  assert.equal(/What this place is/.test(el2.querySelector(".inspect-modal").textContent), false);
+  assert.equal(/O que é este lugar/.test(el2.querySelector(".inspect-modal").textContent), false);
   // the deck's scene name is the way in
   assert.ok(el2.querySelector('.scene-name [data-act="inspect-scene"]'), "scene name opens the sheet");
 });
@@ -376,7 +376,7 @@ test("settings: the Story memory panel renders the three controls with current v
   }));
   const panel = el.querySelector(".memory-settings");
   assert.ok(panel, "Story memory panel");
-  assert.ok(/compresses everything older into a recap/.test(panel.textContent), "the mental model in the copy");
+  assert.ok(/resume automaticamente o conteúdo mais antigo/.test(panel.textContent), "the mental model in the copy");
   assert.equal(panel.querySelector('[data-mem-setting="history_beats"]').getAttribute("value"), "80");
   assert.equal(panel.querySelector('[data-mem-setting="summary_every"]').getAttribute("value"), "10");
   assert.equal(panel.querySelector('[data-mem-setting="context_tokens"]').getAttribute("value"), "0");
@@ -387,7 +387,7 @@ test("the Whisper tab hosts THE whisper composer (say/do/look)", () => {
   const el = parse(renderApp(profileOpen(PROFILE_DATA, { tab: "whisper" })));
   const whisper = el.querySelector(".profile-pane .whisper-sec");
   assert.ok(whisper, "whisper channel lives in the profile's whisper tab");
-  assert.ok(/only jacker/i.test(whisper.querySelector(".pm-hint").textContent), "explains privacy");
+  assert.ok(/só jacker/i.test(whisper.querySelector(".pm-hint").textContent), "explains privacy");
   assert.ok(whisper.querySelector("#pmInput"), "own composer");
   assert.ok(whisper.querySelector('[data-act="pm-mode"][data-mode="do"]'), "say/do modes");
   assert.ok(whisper.querySelector('[data-act="pm-mode"][data-mode="look"]'), "look joins the panel composer");
@@ -414,7 +414,7 @@ test("a fresh character's profile shows the grow-from-interactions empty-state c
   const fresh = { ...PROFILE_DATA, traits: [], moments: [], memories: [] };
   const el = parse(renderApp(profileOpen(fresh)));
   assert.ok(
-    /The more you interact with your characters, the more their traits and personality will grow from your interactions\./.test(
+    /Quanto mais você interage com seus personagens, mais os traços e a personalidade deles crescem com essas interações\./.test(
       el.querySelector(".profile-screen").textContent,
     ),
   );
@@ -553,7 +553,7 @@ test("the composer offers Look at the same level as Do and Say; the old See eye 
   assert.equal(el.querySelector(".see-btn"), null, "the synchronous See eye-flow is removed");
   // look mode shows its own placeholder on the line
   const looking = parse(renderApp(playState({ composer: { mode: "look", stack: [] } })));
-  assert.ok(/look at what\?/i.test(looking.querySelector("#cmpInput").dataset.placeholder));
+  assert.ok(/olhar o quê\?/i.test(looking.querySelector("#cmpInput").dataset.placeholder));
 });
 
 test("Continue and the wish line sit at the composer level", () => {
@@ -563,7 +563,7 @@ test("Continue and the wish line sit at the composer level", () => {
   const wish = el.querySelector("#wishInput");
   assert.ok(wish, "wish input present");
   assert.equal(wish.getAttribute("value"), "let it rain", "the typed wish survives re-renders");
-  assert.ok(/wish to happen next/i.test(wish.getAttribute("placeholder")));
+  assert.ok(/deseja que aconteça a seguir/i.test(wish.getAttribute("placeholder")));
 });
 
 test("a system image beat renders as a SMALL item card labeled with the item name", () => {
@@ -618,8 +618,8 @@ test("settings: autoplay is split and a live game adds difficulty/voice/export",
   assert.ok(game, "per-adventure section when opened from play");
   const normal = game.querySelector('[data-game-setting="difficulty"][value="normal"]');
   assert.ok(normal.hasAttribute("checked"), "current difficulty checked");
-  assert.ok(/attempts succeed/.test(game.textContent), "easy copy explains the mode");
-  assert.ok(/attempts can be refused/.test(game.textContent), "hard copy explains the mode");
+  assert.ok(/tentativas dão certo/.test(game.textContent), "easy copy explains the mode");
+  assert.ok(/tentativas podem falhar/.test(game.textContent), "hard copy explains the mode");
   assert.ok(game.querySelector('[data-game-setting="narrator_gender"][value="female"]'), "narrator voice radios");
   assert.equal(game.querySelector('[data-act="export-game"]'), null, "export lives on the library cards, not here");
 });
@@ -660,7 +660,7 @@ test("the export choice modal offers the two flavors for that card", () => {
 test("the whisper hint sells privacy: only the character is named, never the narrator", () => {
   const el = parse(renderApp(profileOpen(PROFILE_DATA, { tab: "whisper" })));
   const hint = el.querySelector(".whisper-sec .pm-hint");
-  assert.ok(/Only Jacker will ever know this\./.test(hint.textContent));
+  assert.ok(/Só Jacker saberá disso\./.test(hint.textContent));
   assert.equal(/narrator/i.test(hint.textContent), false, "no narrator mention in the private channel");
 });
 
@@ -724,8 +724,8 @@ test("player speech echoes render as MIRRORED dialogue bubbles; deeds stay quiet
   const say = el.querySelector('[data-beat-id="e1"]');
   assert.ok(say.classList.contains("from-player"), "say echo is a player bubble");
   assert.equal(say.querySelector(".bubble p").textContent, "hello there", "the quote is the bubble body");
-  assert.ok(/You/.test(say.querySelector(".bubble-name").textContent));
-  assert.ok(/to Jacker/.test(say.querySelector(".bubble-meta").textContent));
+  assert.ok(/Você/.test(say.querySelector(".bubble-name").textContent));
+  assert.ok(/para Jacker/.test(say.querySelector(".bubble-meta").textContent));
   const whisper = el.querySelector('[data-beat-id="e2"]');
   assert.ok(whisper.classList.contains("whispered"), "whisper echo styled as a whisper");
   assert.equal(whisper.querySelector(".bubble p").textContent, "psst, the key");
@@ -804,13 +804,13 @@ test("give-picker modal lists the player's items and targets the character", () 
 test("offline library shows an honest offline state, never fake games", () => {
   const el = parse(renderApp({ view: "library", games: [], backendOnline: false, backendError: "unreachable" }));
   assert.ok(el.querySelector(".empty-state.offline"));
-  assert.ok(/backend offline/i.test(el.textContent));
+  assert.ok(/servidor offline/i.test(el.textContent));
   assert.equal(el.querySelector(".game-card"), null, "no game cards when offline");
 });
 
 test("empty (online) library invites creating a real game", () => {
   const el = parse(renderApp({ view: "library", games: [], backendOnline: true, backendError: "" }));
-  assert.ok(/no adventures yet/i.test(el.textContent));
+  assert.ok(/ainda não há aventuras/i.test(el.textContent));
   assert.ok(el.querySelector('[data-act="new-game"]'));
 });
 
@@ -867,12 +867,12 @@ test("an ELSEWHERE character: profile readable, actions replaced by a status lin
   // the cast roster shows them, openable, with where they are
   const row = el.querySelector('.cast-row[data-act="open-profile"][data-char-id="c1"]');
   assert.ok(row, "the elsewhere roster row opens the profile");
-  assert.ok(/at The Docks/i.test(row.textContent), "marked with where they are");
+  assert.ok(/em The Docks/i.test(row.textContent), "marked with where they are");
   // the profile is fully readable (description, carrying) but offers NO actions
   const pane = el.querySelector(".profile-pane");
   assert.ok(/Bartender/.test(pane.textContent), "lore stays readable");
   assert.equal(pane.querySelector('[data-act="char-action"]'), null, "no action buttons for the absent");
-  assert.ok(/He is elsewhere - at The Docks\./.test(pane.querySelector(".absence-line").textContent), "the status line says where");
+  assert.ok(/Ele está em outro lugar — em The Docks\./.test(pane.querySelector(".absence-line").textContent), "the status line says where");
 });
 
 test("an elsewhere character's Whisper tab: thread readable, composer replaced by the status line", () => {
@@ -881,7 +881,7 @@ test("an elsewhere character's Whisper tab: thread readable, composer replaced b
   assert.ok(sec.querySelector("#pmThread"), "the thread stays readable");
   assert.equal(sec.querySelector("#pmInput"), null, "no whisper composer for the absent");
   assert.equal(sec.querySelector('[data-form="private"]'), null, "no form either");
-  assert.ok(/He is elsewhere - at The Docks\./.test(sec.querySelector(".absence-line").textContent));
+  assert.ok(/Ele está em outro lugar — em The Docks\./.test(sec.querySelector(".absence-line").textContent));
 });
 
 test("a DEAD character: profile readable, the status line reads gone", () => {
@@ -895,7 +895,7 @@ test("a DEAD character: profile readable, the status line reads gone", () => {
   st.active.state = dead;
   st.active.profile.data = mapProfile({ ...PROFILE_DATA, alive: false });
   const el = parse(renderApp(st));
-  assert.ok(/He is gone\./.test(el.querySelector(".whisper-sec .absence-line").textContent));
+  assert.ok(/Ele não está mais aqui\./.test(el.querySelector(".whisper-sec .absence-line").textContent));
   assert.equal(el.querySelector("#pmInput"), null);
 });
 
@@ -948,7 +948,7 @@ test("a whisper turn shows its thinking IN the thread (visible processing feedba
   const el = parse(renderApp(st));
   const dots = el.querySelector("#pmThread + .pm-thinking, #pmThread .pm-thinking");
   assert.ok(dots, "thinking dots in the whisper thread while the turn resolves");
-  assert.ok(/Jacker considers/.test(dots.textContent));
+  assert.ok(/Jacker está pensando/.test(dots.textContent));
   // idle: no dots
   const idle = parse(renderApp(profileOpen(PROFILE_DATA, { tab: "whisper" })));
   assert.equal(idle.querySelector(".pm-thinking"), null);
@@ -982,10 +982,10 @@ test("settings: the turn-pacing selects render the effective values plus a Defau
   assert.ok(acts, "acts-per-voice select");
   assert.ok(voices.querySelector('option[value="3"]').hasAttribute("selected"), "effective voices value selected");
   assert.ok(acts.querySelector('option[value="1"]').hasAttribute("selected"), "effective acts value selected");
-  assert.equal(voices.querySelector('option[value="0"]').textContent, "Default", "Default option sends 0");
+  assert.equal(voices.querySelector('option[value="0"]').textContent, "Padrão", "Default option sends 0");
   assert.equal(voices.querySelectorAll("option").length, 5, "Default + 1..4");
   assert.equal(acts.querySelectorAll("option").length, 4, "Default + 1..3");
-  assert.ok(/how crowded a single turn can get/i.test(el.querySelector(".game-settings").textContent), "the copy explains the dial");
+  assert.ok(/quantos personagens podem participar de um turno/i.test(el.querySelector(".game-settings").textContent), "the copy explains the dial");
 });
 
 test("origin empty state: no 'Their past' section, but the grow note still shows for a fresh character", () => {
@@ -993,7 +993,7 @@ test("origin empty state: no 'Their past' section, but the grow note still shows
   const el = parse(renderApp(profileOpen(fresh)));
   const screenEl = el.querySelector(".profile-screen");
   assert.equal(/Their past/.test(screenEl.textContent), false, "no origin section when nothing is learned");
-  assert.ok(/grow from your interactions/.test(screenEl.textContent), "the grow note shows");
+  assert.ok(/crescem com essas interações/.test(screenEl.textContent), "the grow note shows");
 });
 
 test("a memory whose image is still rendering (image_url null) is skipped, never a broken img", () => {

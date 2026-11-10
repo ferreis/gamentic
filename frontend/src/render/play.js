@@ -21,7 +21,7 @@ export { renderViewPending };
 export function renderPlay(state) {
   const g = state.active;
   if (!g || !g.state) {
-    return `<main class="play-loading"><div class="empty-icon">${icon("sparkles")}</div><p>Loading the adventure...</p></main>`;
+    return `<main class="play-loading"><div class="empty-icon">${icon("sparkles")}</div><p>Carregando a aventura...</p></main>`;
   }
   const s = g.state;
   // PARTIAL busy-lock: while a turn is in flight, only state-MUTATING surfaces
@@ -36,7 +36,7 @@ export function renderPlay(state) {
       ${renderPlayDeck(s, locked, g)}
 
       <div class="play-body">
-        <main class="story" id="storyStream" data-help-anchor role="log" aria-live="polite" aria-relevant="additions" aria-label="Story">
+        <main class="story" id="storyStream" data-help-anchor role="log" aria-live="polite" aria-relevant="additions" aria-label="História">
           <div class="story-help-row">${help("story")}</div>
           ${renderStory(g)}
           ${g.pendingView && !g.lastVia ? renderViewPending() : ""}
@@ -44,7 +44,7 @@ export function renderPlay(state) {
         </main>
 
         <aside class="char-column">
-          <div class="col-head">${icon("mask")}<span>In the scene</span>${help("party")}</div>
+          <div class="col-head">${icon("mask")}<span>Na cena</span>${help("party")}</div>
           ${renderCharacters(s, locked, g)}
         </aside>
       </div>
@@ -69,15 +69,15 @@ export function renderGiveModal(s, give, locked) {
      </button>`;
   const body = items.length
     ? slotGrid(items, 6, "give-items", pickCell)
-    : `<p class="modal-body">You have nothing to give.</p>`;
+    : `<p class="modal-body">Você não tem nada para dar.</p>`;
   return modalShell({
     overlayAct: "cancel-give",
     cls: "give-modal",
-    ariaLabel: `Give to ${give.name}`,
-    header: `<h3 class="modal-title give"><span class="ic">${icon("gem")}</span><span>Give to ${escapeHtml(give.name)}</span></h3>`,
-    body: `${items.length ? `<p class="modal-body">Choose an item to hand over.</p>` : ""}
+    ariaLabel: `Dar para ${give.name}`,
+    header: `<h3 class="modal-title give"><span class="ic">${icon("gem")}</span><span>Dar para ${escapeHtml(give.name)}</span></h3>`,
+    body: `${items.length ? `<p class="modal-body">Escolha um item para entregar.</p>` : ""}
         ${body}`,
-    actions: `<button class="holo-btn" data-act="cancel-give" ${dis}>Cancel</button>`,
+    actions: `<button class="holo-btn" data-act="cancel-give" ${dis}>Cancelar</button>`,
   });
 }
 
@@ -92,7 +92,7 @@ export function renderPlayDeck(s, locked, g = {}) {
   const dis = locked ? "disabled" : "";
   const p = s.player;
   const scene = s.scene;
-  const name = (scene && scene.name) || titleCase(p.location || "Unknown");
+  const name = (scene && scene.name) || titleCase(p.location || "Desconhecido");
   const desc = (scene && scene.description) || "";
   const mood = (scene && scene.status) || s.sceneStatus || null;
   const items = (scene && scene.items) || [];
@@ -103,38 +103,38 @@ export function renderPlayDeck(s, locked, g = {}) {
   return `
     <header class="play-deck">
       <div class="deck-nav">
-        ${iconBtn({ act: "go-library", icon: "chevronLeft", label: "Library", disabled: locked })}
+        ${iconBtn({ act: "go-library", icon: "chevronLeft", label: "Biblioteca", disabled: locked })}
       </div>
 
       <div class="deck-scene">
         ${cardCorners()}
         <div class="scene-id">
           ${mood ? `<span class="mood-badge mood-${escapeHtml(mood)}">${escapeHtml(mood)}</span>` : ""}
-          ${s.time ? `<span class="time-chip" title="Story time, not yours">${icon("clock")}<span>${escapeHtml(s.time.label)}</span></span>` : ""}
+          ${s.time ? `<span class="time-chip" title="Hora da história, não a sua">${icon("clock")}<span>${escapeHtml(s.time.label)}</span></span>` : ""}
         </div>
-        <h2 class="scene-name"><button type="button" class="scene-name-btn" data-act="inspect-scene" title="What this place is" ${dis}>${escapeHtml(name)}</button>${help("scene")}</h2>
+        <h2 class="scene-name"><button type="button" class="scene-name-btn" data-act="inspect-scene" title="O que é este lugar" ${dis}>${escapeHtml(name)}</button>${help("scene")}</h2>
         ${desc ? `<p class="scene-desc">${escapeHtml(desc)}</p>` : ""}
       </div>
 
       <div class="deck-board">
         <div class="board-cell">
-          <span class="rail-label">${icon("gem")}<span>Scene items</span></span>
+          <span class="rail-label">${icon("gem")}<span>Itens da cena</span></span>
           ${slotGrid(items, 6, "scene-items", sceneItemSlot, s.imagesEnabled)}
         </div>
         <i class="board-sep" aria-hidden="true"></i>
         <div class="board-cell">
-          <span class="rail-label">${icon("zap")}<span>Actions</span></span>
+          <span class="rail-label">${icon("zap")}<span>Ações</span></span>
           <div class="act-row">
             ${actions.map((a) => sceneActionBtn(a, locked)).join("")}
-            ${!actions.length ? `<span class="muted small">Nothing obvious to do.</span>` : ""}
+            ${!actions.length ? `<span class="muted small">Não há nada óbvio para fazer.</span>` : ""}
           </div>
         </div>
         <i class="board-sep" aria-hidden="true"></i>
         <div class="board-cell">
-          <span class="rail-label">${icon("compass")}<span>Ways out</span></span>
+          <span class="rail-label">${icon("compass")}<span>Saídas</span></span>
           <div class="act-row">
             ${exits.map((e) => exitBtn(e, locked)).join("")}
-            ${!exits.length ? `<span class="dead-end">${icon("x")}<span>Dead end: no way out revealed</span></span>` : ""}
+            ${!exits.length ? `<span class="dead-end">${icon("x")}<span>Beco sem saída: nenhuma saída revelada</span></span>` : ""}
           </div>
         </div>
       </div>
@@ -150,11 +150,11 @@ export function renderPlayDeck(s, locked, g = {}) {
           ${help("hud")}
         </div>
         ${contextMeter(s.context)}
-        ${s.currentGoal ? `<button type="button" class="hud-goal" data-act="inspect-goal" title="Current goal - tap for the quest log" ${dis}>${icon("compass")}<span>${escapeHtml(s.currentGoal)}</span></button>` : ""}
+        ${s.currentGoal ? `<button type="button" class="hud-goal" data-act="inspect-goal" title="Objetivo atual — toque para ver as missões" ${dis}>${icon("compass")}<span>${escapeHtml(s.currentGoal)}</span></button>` : ""}
       </div>
 
       <div class="deck-nav">
-        ${iconBtn({ act: "open-settings", icon: "settings", label: "Menu", title: "Menu / settings" })}
+        ${iconBtn({ act: "open-settings", icon: "settings", label: "Menu", title: "Menu e configurações" })}
       </div>
     </header>`;
 }
@@ -167,11 +167,11 @@ export function renderCharacters(s, locked, g = {}) {
 
   const here = present.length
     ? `<div class="char-deck cols-${present.length}">${present.map((c) => renderCharColumn(c, s, locked, g)).join("")}</div>`
-    : `<p class="muted small char-empty">No one else is here right now.</p>`;
+    : `<p class="muted small char-empty">Não há mais ninguém aqui agora.</p>`;
 
   const roster = elsewhere.length
     ? `<div class="cast-roster">
-         <div class="col-head sub">${icon("eye")}<span>Elsewhere</span></div>
+         <div class="col-head sub">${icon("eye")}<span>Em outro lugar</span></div>
          ${elsewhere.map((c) => castRow(c, g)).join("")}
        </div>`
     : "";
@@ -193,7 +193,7 @@ export function renderCharColumn(c, s, locked, g = {}) {
   const unread = unreadBadge(unreadPmCount(g, c.id), "on-card");
   return `
     <article class="char-col${c.alive ? "" : " dead"}" data-char-id="${escapeHtml(c.id)}" style="--speaker:${escapeHtml(c.color)}">
-      <button type="button" class="col-art" data-act="open-profile" data-char-id="${escapeHtml(c.id)}" data-char-name="${escapeHtml(c.name)}" title="Open ${escapeHtml(c.name)}'s profile" aria-label="Open ${escapeHtml(c.name)}'s profile">
+      <button type="button" class="col-art" data-act="open-profile" data-char-id="${escapeHtml(c.id)}" data-char-name="${escapeHtml(c.name)}" title="Abrir perfil de ${escapeHtml(c.name)}" aria-label="Abrir perfil de ${escapeHtml(c.name)}">
         ${bodyArt(c, s)}
         <div class="col-grad" aria-hidden="true"></div>
         ${unread}
@@ -201,13 +201,13 @@ export function renderCharColumn(c, s, locked, g = {}) {
           ${dispositionBadges(c)}
         </span>
         <div class="col-plate">
-          <span class="char-name">${escapeHtml(c.name)}${c.following ? ` <span class="follow-tag" title="Following you">${icon("compass")}</span>` : ""}</span>
+          <span class="char-name">${escapeHtml(c.name)}${c.following ? ` <span class="follow-tag" title="Segue você">${icon("compass")}</span>` : ""}</span>
           ${hp}
         </div>
       </button>
       ${contextMeter(c.context, { mini: true, label: `${c.name}'s memory` })}
       <div class="char-inv">
-        <span class="inv-mini-label">Carrying</span>
+        <span class="inv-mini-label">Carregando</span>
         ${slotGrid(c.inventory, 3, "char-items", undefined, s.imagesEnabled)}
       </div>
       <span class="char-hint">${icon("panel")}<span>expand to interact</span></span>
@@ -223,7 +223,7 @@ export function bodyArt(c, s) {
     return artImg({ url: c.bodyUrl, alt: c.name, caption, cls: "col-body" });
   }
   if (s.imagesEnabled) {
-    return artLoading("col-body", "manifesting", `${c.name} (art is being painted)`);
+    return artLoading("col-body", "criando imagem", `${c.name} (imagem em criação)`);
   }
   return `<div class="col-body art-off" role="img" aria-label="${escapeHtml(c.name)}">
             <span class="col-initial">${escapeHtml(initials(c.name))}</span>
@@ -233,11 +233,11 @@ export function bodyArt(c, s) {
 export function castRow(c, g = {}) {
   const avatar = avatarOrInitials({ url: c.faceUrl, name: c.name, color: c.color, fallbackCls: "cast-fallback" });
   let where;
-  if (!c.alive) where = "fallen";
-  else if (c.following) where = "with you";
-  else if (c.present === false) where = "gone";
-  else if (c.location) where = `at ${titleCase(c.location)}`;
-  else where = "elsewhere";
+  if (!c.alive) where = "morto";
+  else if (c.following) where = "com você";
+  else if (c.present === false) where = "ausente";
+  else if (c.location) where = `em ${titleCase(c.location)}`;
+  else where = "em outro lugar";
   // an absent character can still whisper the player: their row carries the
   // same unread alert as a present card
   const unread = unreadBadge(unreadPmCount(g, c.id), "on-row");
@@ -255,7 +255,7 @@ export function renderActionBar(g, s, locked) {
   return `
     <footer class="play-actionbar">
       <div class="player-inv">
-        <span class="rail-label">${icon("gem")}<span>You</span>${help("inventory")}</span>
+        <span class="rail-label">${icon("gem")}<span>Você</span>${help("inventory")}</span>
         ${slotGrid(s.player.inventory, 6, "player-items", undefined, s.imagesEnabled)}
         <span class="action-help">${help("action")}</span>
       </div>
@@ -267,21 +267,21 @@ export function renderActionBar(g, s, locked) {
           locked,
           modes: ["say", "do", "look"],
           placeholders: {
-            do: "Do or say anything... (Enter sends)",
-            say: "What do you say?",
-            look: "Look at what? (empty = study the whole scene)",
+            do: "Faça ou diga qualquer coisa... (Enter envia)",
+            say: "O que você diz?",
+            look: "Olhar o quê? (vazio = observar toda a cena)",
           },
-          submitLabel: "Send",
+          submitLabel: "Enviar",
         })}
       </form>
       <div class="turn-aux">
         <input type="text" id="wishInput" class="holo-input wish-input" autocomplete="off" maxlength="200"
-               placeholder="What do you wish to happen next? (optional)" aria-label="What do you wish to happen next?"
-               title="A hope whispered to the storyteller, not an action. Easy stories lean into wishes; hard ones may ignore them."
+               placeholder="O que você deseja que aconteça a seguir? (opcional)" aria-label="O que você deseja que aconteça a seguir?"
+               title="Um desejo para o narrador. Histórias fáceis tendem a realizá-lo; histórias difíceis podem ignorá-lo."
                value="${escapeHtml(g.wish || "")}" ${dis} />
         <button type="button" class="holo-btn continue-btn" data-act="continue-story"
-                title="Let the story advance on its own, no input needed" ${dis}>
-          ${icon("play")}<span>Continue</span>
+                title="Deixe a história avançar sozinha, sem entrada" ${dis}>
+          ${icon("play")}<span>Continuar</span>
         </button>
       </div>
     </footer>`;
@@ -290,14 +290,14 @@ export function renderActionBar(g, s, locked) {
 export function renderNarrating(g) {
   const p = g && g.livePhase;
   const label = !p
-    ? "the narrator is thinking..."
+    ? "o narrador está pensando..."
     : p.phase === "interpret"
-      ? "reading your words..."
+      ? "lendo suas palavras..."
       : p.phase === "character"
-        ? `${p.name || "someone"} is replying...`
-        : "the narrator is writing...";
+        ? `${p.name || "alguém"} está respondendo...`
+        : "o narrador está escrevendo...";
   const stop = g && g.stopping
-    ? `<button type="button" class="holo-btn small stop-btn" disabled>${icon("x")}<span>stopping...</span></button>`
-    : `<button type="button" class="holo-btn small stop-btn" data-act="stop-turn" title="Cancel this turn as if never sent; your words come back">${icon("x")}<span>Stop</span></button>`;
+    ? `<button type="button" class="holo-btn small stop-btn" disabled>${icon("x")}<span>interrompendo...</span></button>`
+    : `<button type="button" class="holo-btn small stop-btn" data-act="stop-turn" title="Cancele este turno como se não tivesse sido enviado; suas palavras voltam">${icon("x")}<span>Parar</span></button>`;
   return `<div class="narrating-row">${narratingDots(label)}${stop}</div>`;
 }

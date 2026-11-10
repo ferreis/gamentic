@@ -177,7 +177,7 @@ export async function resolveTurn(g, send, { look = false, echo = null, restore 
       // owed - take back what streamed and hand the words back to the composer
       stopped = true;
       discardLiveTurn(g);
-      showToast("Stopped. Nothing happened; your words are back below.");
+      showToast("Interrompido. Nada aconteceu; suas palavras voltaram abaixo.");
     }
     state.backendOnline = true;
   } catch (err) {
@@ -185,9 +185,9 @@ export async function resolveTurn(g, send, { look = false, echo = null, restore 
     g.beats = g.beats.filter((b) => !b.pending); // the turn never happened
     discardLiveTurn(g); // ...and neither did its live-streamed content
     if (wish) g.wish = wish; // the wish returns to its line too
-    state.backendError = err.message || "Turn failed";
+    state.backendError = err.message || "A ação falhou";
     if (err.status === 0) state.backendOnline = false;
-    showToast(err.message || "The backend did not accept that action.");
+    showToast(err.message || "O servidor não aceitou esta ação.");
   } finally {
     g.generating = false;
     g.stopping = false;

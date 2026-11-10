@@ -1,3 +1,5 @@
+import { titleCase } from "./render/common.js";
+
 // State-transition engine: the frontend must make every change LEGIBLE.
 //
 // Each turn the backend returns the full fresh state. We diff the previous mapped
@@ -137,22 +139,22 @@ export function diffState(prev, next) {
 export function buildNotices(ch) {
   const out = [];
   if (!ch) return out;
-  if (ch.sceneChanged && ch.sceneName) out.push({ icon: "compass", tone: "scene", text: `Entered ${ch.sceneName}` });
-  for (const e of ch.exitsAdded) out.push({ icon: "compass", tone: "info", text: `A way opens: ${e}` });
-  for (const c of ch.charSpawned) out.push({ icon: "mask", tone: "info", text: `${c.name} appears` });
-  for (const c of ch.charJoined) out.push({ icon: "mask", tone: "info", text: `${c.name} arrives` });
-  for (const c of ch.charLeft) out.push({ icon: "mask", tone: "muted", text: `${c.name} leaves` });
-  for (const c of ch.charFollowing) out.push({ icon: "compass", tone: "good", text: `${c.name} now follows you` });
-  for (const c of ch.charUnfollowing) out.push({ icon: "compass", tone: "muted", text: `${c.name} stays behind` });
-  for (const c of ch.charDisposition) out.push({ icon: "mask", tone: dispTone(c.to), text: `${c.name} is now ${c.to}` });
-  for (const c of ch.charDied) out.push({ icon: "flame", tone: "danger", text: `${c.name} has fallen` });
-  if (ch.goalChanged) out.push({ icon: "compass", tone: "gold", text: `New goal: ${ch.goal}` });
-  for (const t of ch.questsAdded) out.push({ icon: "scroll", tone: "gold", text: `New quest: ${t}` });
-  for (const t of ch.objectivesDone) out.push({ icon: "check", tone: "good", text: `Objective done: ${t}` });
+  if (ch.sceneChanged && ch.sceneName) out.push({ icon: "compass", tone: "scene", text: `Você entrou em ${ch.sceneName}` });
+  for (const e of ch.exitsAdded) out.push({ icon: "compass", tone: "info", text: `Uma saída se abre: ${e}` });
+  for (const c of ch.charSpawned) out.push({ icon: "mask", tone: "info", text: `${c.name} aparece` });
+  for (const c of ch.charJoined) out.push({ icon: "mask", tone: "info", text: `${c.name} chega` });
+  for (const c of ch.charLeft) out.push({ icon: "mask", tone: "muted", text: `${c.name} sai` });
+  for (const c of ch.charFollowing) out.push({ icon: "compass", tone: "good", text: `${c.name} agora segue você` });
+  for (const c of ch.charUnfollowing) out.push({ icon: "compass", tone: "muted", text: `${c.name} fica para trás` });
+  for (const c of ch.charDisposition) out.push({ icon: "mask", tone: dispTone(c.to), text: `${c.name} agora está ${titleCase(c.to)}` });
+  for (const c of ch.charDied) out.push({ icon: "flame", tone: "danger", text: `${c.name} morreu` });
+  if (ch.goalChanged) out.push({ icon: "compass", tone: "gold", text: `Novo objetivo: ${ch.goal}` });
+  for (const t of ch.questsAdded) out.push({ icon: "scroll", tone: "gold", text: `Nova missão: ${t}` });
+  for (const t of ch.objectivesDone) out.push({ icon: "check", tone: "good", text: `Objetivo concluído: ${t}` });
   for (const q of ch.questResolved)
-    out.push({ icon: "scroll", tone: q.status === "failed" ? "danger" : "good", text: `Quest ${q.status}: ${q.title}` });
-  if (ch.storyEnded === "won") out.push({ icon: "star", tone: "gold", text: "Victory" });
-  if (ch.storyEnded === "lost") out.push({ icon: "flame", tone: "danger", text: "You have fallen" });
+    out.push({ icon: "scroll", tone: q.status === "failed" ? "danger" : "good", text: `Missão ${q.status === "failed" ? "fracassada" : "concluída"}: ${q.title}` });
+  if (ch.storyEnded === "won") out.push({ icon: "star", tone: "gold", text: "Vitória" });
+  if (ch.storyEnded === "lost") out.push({ icon: "flame", tone: "danger", text: "Você caiu" });
   return out;
 }
 

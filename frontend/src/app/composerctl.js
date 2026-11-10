@@ -10,9 +10,9 @@ import { focusComposer, render } from "./ui.js";
 // Toggle Do/Say/Look in place (no re-render: a render would wipe the typed line).
 export const MODE_PLACEHOLDERS = {
   cmp: {
-    do: "Do or say anything... (Enter sends)",
-    say: "What do you say?",
-    look: "Look at what? (empty = study the whole scene)",
+    do: "Faça ou diga qualquer coisa... (Enter envia)",
+    say: "O que você diz?",
+    look: "Olhar o quê? (vazio = observar toda a cena)",
   },
 };
 
@@ -31,14 +31,14 @@ export function setComposerMode(holder, scope, mode) {
     input.dataset.placeholder =
       scope === "pm"
         ? mode === "say"
-          ? `Whisper to ${name}...`
+          ? `Sussurre para ${name}...`
           : mode === "look"
-            ? `Look at what? (${name}, a detail, the room...)`
-            : `A discreet act only ${name} notices...`
+            ? `Olhar o quê? (${name}, um detalhe, o ambiente...)`
+            : `Uma ação discreta que só ${name} percebe...`
         : MODE_PLACEHOLDERS.cmp[mode];
     input.setAttribute(
       "aria-label",
-      mode === "say" ? "What you say" : mode === "look" ? "What you look at" : "What you do",
+      mode === "say" ? "O que você diz" : mode === "look" ? "O que você observa" : "O que você faz",
     );
     input.focus();
   }

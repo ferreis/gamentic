@@ -21,9 +21,9 @@ export function menuNode({ act, icon: ic, label, sub, kind }) {
 export function renderMenu(state) {
   const online = state.backendOnline;
   const nodes = [
-    { kind: "new", act: "new-game", icon: "plus", label: "New", sub: "Forge a world" },
-    { kind: "play", act: "go-library", icon: "play", label: "Play", sub: "Enter your saved worlds" },
-    { kind: "settings", act: "open-settings", icon: "settings", label: "Settings", sub: "Sound & backend" },
+    { kind: "new", act: "new-game", icon: "plus", label: "Novo", sub: "Crie um mundo" },
+    { kind: "play", act: "go-library", icon: "play", label: "Jogar", sub: "Entre nos mundos salvos" },
+    { kind: "settings", act: "open-settings", icon: "settings", label: "Configurações", sub: "Som e servidor" },
   ];
   return `
     <div class="menu-stage holo-stage" data-stage>
@@ -37,7 +37,7 @@ export function renderMenu(state) {
 
       <div class="menu-title">
         <h1 class="title-glyph" data-text="GAMENTIC">GAMENTIC</h1>
-        <p class="title-sub">A self-hosted AI dungeon</p>
+        <p class="title-sub">Uma aventura de IA auto-hospedada</p>
       </div>
 
       <nav class="menu-deck">
@@ -47,7 +47,7 @@ export function renderMenu(state) {
       <footer class="menu-foot">
         <span class="foot-chip">v1.0</span>
         <span class="foot-line"></span>
-        <span class="foot-chip dim">LOCAL AI DUNGEON</span>
+        <span class="foot-chip dim">AVENTURA LOCAL COM IA</span>
       </footer>
     </div>`;
 }
@@ -63,26 +63,26 @@ export function renderLibrary(state) {
     body = `
       <div class="empty-state offline">
         <div class="empty-icon">${icon("radio")}</div>
-        <h2>Backend offline</h2>
-        <p>Could not reach the game server${backendError ? ` (${escapeHtml(backendError)})` : ""}.
-           Start the stack and retry. No fake games are shown.</p>
-        <button class="holo-btn" data-act="retry-library">${icon("rotate")}<span>Retry link</span></button>
+        <h2>Servidor offline</h2>
+        <p>Não foi possível acessar o servidor do jogo${backendError ? ` (${escapeHtml(backendError)})` : ""}.
+           Inicie os serviços e tente novamente.</p>
+        <button class="holo-btn" data-act="retry-library">${icon("rotate")}<span>Tentar novamente</span></button>
       </div>`;
   } else if (!games.length) {
     body = `
       <div class="empty-state">
         <div class="empty-icon">${icon("sparkles")}</div>
-        <h2>No adventures yet</h2>
-        <p>Forge your first real world to begin.</p>
-        <button class="holo-btn primary" data-act="new-game">${icon("plus")}<span>New adventure</span></button>
+        <h2>Ainda não há aventuras</h2>
+        <p>Crie seu primeiro mundo para começar.</p>
+        <button class="holo-btn primary" data-act="new-game">${icon("plus")}<span>Nova aventura</span></button>
       </div>`;
   } else {
     body = `<div class="holo-grid">
       ${games.map(renderGameCard).join("")}
       <button class="holo-card new-card" data-act="new-game">
         <span class="mini-dial">${icon("plus")}</span>
-        <span class="card-title">New world</span>
-        <span class="card-meta">Forge a fresh adventure</span>
+        <span class="card-title">Novo mundo</span>
+        <span class="card-meta">Crie uma nova aventura</span>
       </button>
     </div>`;
   }
@@ -91,15 +91,15 @@ export function renderLibrary(state) {
     <div class="holo-stage lib-stage" data-stage>
       ${holoFx()}
       <header class="holo-bar">
-        ${iconBtn({ act: "go-menu", icon: "chevronLeft", label: "Main menu" })}
-        <span class="hud-tag">// ADVENTURES</span>
+        ${iconBtn({ act: "go-menu", icon: "chevronLeft", label: "Menu principal" })}
+        <span class="hud-tag">// AVENTURAS</span>
         ${help("library")}
         ${hudStat(backendOnline)}
-        <button class="holo-btn lib-import" data-act="import-game" title="Import an exported adventure (template or checkpoint)" ${state.importing ? "disabled" : ""}>
-          ${icon("rotate")}<span>${state.importing ? "Importing..." : "Import"}</span>
+        <button class="holo-btn lib-import" data-act="import-game" title="Importar uma aventura exportada (modelo ou ponto salvo)" ${state.importing ? "disabled" : ""}>
+          ${icon("rotate")}<span>${state.importing ? "Importando..." : "Importar"}</span>
         </button>
-        <input type="file" id="importFile" accept=".json,application/json" hidden aria-label="Adventure export file" />
-        ${iconBtn({ act: "open-settings", icon: "settings", label: "Settings" })}
+        <input type="file" id="importFile" accept=".json,application/json" hidden aria-label="Arquivo de aventura exportada" />
+        ${iconBtn({ act: "open-settings", icon: "settings", label: "Configurações" })}
       </header>
       <main class="lib-main">${body}</main>
       ${state.confirm ? renderConfirm(state.confirm) : ""}
@@ -116,10 +116,10 @@ export function renderGameCard(game) {
       <p class="card-meta">${escapeHtml(game.created_at || "")}</p>
       <div class="card-actions">
         <button class="holo-btn" data-act="continue-game" data-game-id="${escapeHtml(game.id)}">
-          ${icon("play")}<span>Enter</span>
+          ${icon("play")}<span>Entrar</span>
         </button>
-        ${iconBtn({ act: "ask-export", icon: "send", label: "Export adventure", title: "Export", data: { "game-id": game.id, "game-title": game.title } })}
-        ${iconBtn({ act: "ask-delete", icon: "trash", label: "Delete adventure", title: "Delete", cls: "danger", data: { "game-id": game.id, "game-title": game.title } })}
+        ${iconBtn({ act: "ask-export", icon: "send", label: "Exportar aventura", title: "Exportar", data: { "game-id": game.id, "game-title": game.title } })}
+        ${iconBtn({ act: "ask-delete", icon: "trash", label: "Excluir aventura", title: "Excluir", cls: "danger", data: { "game-id": game.id, "game-title": game.title } })}
       </div>
     </article>`;
 }
@@ -129,31 +129,31 @@ export function renderGameCard(game) {
 export function renderExportChoice(ex) {
   return modalShell({
     overlayAct: "cancel-export",
-    title: `Export "${ex.title}"`,
+    title: `Exportar "${ex.title}"`,
     titleIcon: "send",
-    ariaLabel: `Export "${ex.title}"`,
-    body: `<p class="modal-body">Share the adventure as a fresh start, or save this exact moment as a full checkpoint. Either downloads a file the library can import.</p>`,
+    ariaLabel: `Exportar "${ex.title}"`,
+    body: `<p class="modal-body">Compartilhe a aventura como um novo começo ou salve este momento como um ponto de salvamento completo. As duas opções baixam um arquivo que a biblioteca pode importar.</p>`,
     actionsCls: "export-actions",
     actions: `
       <button class="holo-btn" data-act="export-game" data-kind="template" data-game-id="${escapeHtml(ex.gameId)}" data-game-title="${escapeHtml(ex.title)}">
-        ${icon("sparkles")}<span>Share as adventure</span>
+        ${icon("sparkles")}<span>Compartilhar como aventura</span>
       </button>
       <button class="holo-btn" data-act="export-game" data-kind="checkpoint" data-game-id="${escapeHtml(ex.gameId)}" data-game-title="${escapeHtml(ex.title)}">
-        ${icon("scroll")}<span>Save this moment</span>
+        ${icon("scroll")}<span>Salvar este momento</span>
       </button>
-      <button class="holo-btn" data-act="cancel-export">Cancel</button>`,
+      <button class="holo-btn" data-act="cancel-export">Cancelar</button>`,
   });
 }
 
 export function renderConfirm(c) {
   return modalShell({
     overlayAct: "cancel-delete",
-    title: "Delete adventure?",
+    title: "Excluir aventura?",
     titleIcon: "trash",
-    body: `<p class="modal-body">"${escapeHtml(c.title)}" will be wiped: characters, scenes, quests, and history. This cannot be undone.</p>`,
+    body: `<p class="modal-body">"${escapeHtml(c.title)}" será apagada, incluindo personagens, cenas, missões e histórico. Esta ação não pode ser desfeita.</p>`,
     actions: `
-      <button class="holo-btn" data-act="cancel-delete">Cancel</button>
-      <button class="holo-btn danger" data-act="confirm-delete" data-game-id="${escapeHtml(c.gameId)}">${icon("trash")}<span>Delete</span></button>`,
+      <button class="holo-btn" data-act="cancel-delete">Cancelar</button>
+      <button class="holo-btn danger" data-act="confirm-delete" data-game-id="${escapeHtml(c.gameId)}">${icon("trash")}<span>Excluir</span></button>`,
   });
 }
 
@@ -167,29 +167,29 @@ export function renderCreator(state) {
     .map(
       (m) =>
         `<div class="forge-msg ${m.role === "user" ? "from-user" : "from-builder"}">
-           <span class="forge-who">${m.role === "user" ? "You" : "World-builder"}</span>
+           <span class="forge-who">${m.role === "user" ? "Você" : "Criador de mundos"}</span>
            <p>${escapeHtml(m.text)}</p>
          </div>`,
     )
     .join("");
   const thinking = c.busy
-    ? `<div class="forge-msg from-builder thinking"><span class="forge-who">World-builder</span>
-         ${narratingDots("shaping the world...")}
+    ? `<div class="forge-msg from-builder thinking"><span class="forge-who">Criador de mundos</span>
+         ${narratingDots("moldando o mundo...")}
        </div>`
     : "";
   const restored = c.restored
-    ? `<div class="forge-restored">${icon("rotate")}<span>Picked up where you left off. This conversation survived.</span></div>`
+    ? `<div class="forge-restored">${icon("rotate")}<span>Retomamos de onde você parou. Esta conversa foi preservada.</span></div>`
     : "";
 
   return `
     <div class="holo-stage forge-stage" data-stage>
       ${holoFx()}
       <header class="holo-bar">
-        ${iconBtn({ act: "go-library", icon: "chevronLeft", label: "Back", title: "Back to adventures" })}
-        <span class="hud-tag">// FORGE</span>
+        ${iconBtn({ act: "go-library", icon: "chevronLeft", label: "Voltar", title: "Voltar para aventuras" })}
+        <span class="hud-tag">// CRIAR</span>
         ${help("creator")}
-        <button class="holo-btn forge-restart" data-act="creator-restart" title="Discard this conversation and start a new world" ${c.busy ? "disabled" : ""}>
-          ${icon("rotate")}<span>Start over</span>
+        <button class="holo-btn forge-restart" data-act="creator-restart" title="Descartar esta conversa e criar um novo mundo" ${c.busy ? "disabled" : ""}>
+          ${icon("rotate")}<span>Recomeçar</span>
         </button>
       </header>
 
@@ -201,13 +201,13 @@ export function renderCreator(state) {
         ${c.error ? `<p class="forge-error">${escapeHtml(c.error)}</p>` : ""}
         <form class="forge-form" data-form="creator">
           <input name="creatorText" class="holo-input" autocomplete="off"
-                 placeholder="Describe your world: a haunted lighthouse, a flooded crypt, a neon city in decay..."
+                 placeholder="Descreva seu mundo: um farol assombrado, uma cripta inundada, uma cidade neon em decadência..."
                  ${c.busy ? "disabled" : ""} />
-          <button class="holo-btn" type="submit" ${c.busy ? "disabled" : ""}>${icon("send")}<span>Send</span></button>
+          <button class="holo-btn" type="submit" ${c.busy ? "disabled" : ""}>${icon("send")}<span>Enviar</span></button>
         </form>
         <button class="holo-btn primary forge-begin" data-act="begin-adventure" ${c.busy || !c.ready ? "disabled" : ""}
-                title="${c.ready ? "Forge this world and begin" : "The world-builder unlocks this when your world is ready"}">
-          ${icon("flame")}<span>${c.busy ? "Summoning..." : c.ready ? "Begin the Adventure" : "Begin (not ready yet)"}</span>
+                title="${c.ready ? "Criar este mundo e começar" : "O criador de mundos libera esta opção quando o mundo estiver pronto"}">
+          ${icon("flame")}<span>${c.busy ? "Invocando..." : c.ready ? "Iniciar a aventura" : "Iniciar (ainda não está pronto)"}</span>
         </button>
       </footer>
       ${c.finalizing ? renderCrafting() : ""}
@@ -218,11 +218,11 @@ export function renderCreator(state) {
 // while: it builds scenes, characters, portraits, voices). Blocks the chat.
 export function renderCrafting() {
   const lines = [
-    "Seeding the opening scene",
-    "Summoning characters",
-    "Painting the world",
-    "Binding voices",
-    "Lighting the neon",
+    "Preparando a cena inicial",
+    "Invocando personagens",
+    "Pintando o mundo",
+    "Conectando vozes",
+    "Acendendo o neon",
   ];
   return `
     <div class="craft-overlay" role="status" aria-live="polite">
@@ -234,7 +234,7 @@ export function renderCrafting() {
         <span class="craft-orbit slow"><span class="craft-spark alt"></span></span>
         <span class="craft-glyph">${icon("sigil")}</span>
       </div>
-      <h2 class="craft-title">Forging your world</h2>
+      <h2 class="craft-title">Criando seu mundo</h2>
       <div class="craft-status">
         ${lines.map((t, i) => `<span style="--i:${i}">${escapeHtml(t)}</span>`).join("")}
       </div>
@@ -264,7 +264,7 @@ export function renderSettings(state) {
     <div class="holo-stage set-stage" data-stage>
       ${holoFx()}
       <header class="holo-bar">
-        ${iconBtn({ act: "close-settings", icon: "chevronLeft", label: "Back" })}
+        ${iconBtn({ act: "close-settings", icon: "chevronLeft", label: "Voltar" })}
         <span class="hud-tag">// SYSTEM</span>
         ${help("settings")}
       </header>
@@ -272,25 +272,25 @@ export function renderSettings(state) {
         <div class="set-col">
         <section class="holo-panel">
           ${cardCorners()}
-          ${secHead("h3", "panel-head", "mic", "Audio")}
+          ${secHead("h3", "panel-head", "mic", "Áudio")}
 
           <label class="set-row">
-            <span class="set-label">Voice<small>Narration & character speech</small></span>
+            <span class="set-label">Voz<small>Narração e falas dos personagens</small></span>
             ${holoSwitch("voiceEnabled", st.voiceEnabled)}
           </label>
 
           <label class="set-row">
-            <span class="set-label">Narrator voice<small>Auto-speak narration as it arrives</small></span>
+            <span class="set-label">Voz do narrador<small>Reproduzir narração automaticamente</small></span>
             ${holoSwitch("autoplayNarrator", st.autoplayNarrator)}
           </label>
 
           <label class="set-row">
-            <span class="set-label">Character voices<small>Auto-speak character lines as they arrive</small></span>
+            <span class="set-label">Vozes dos personagens<small>Reproduzir falas automaticamente</small></span>
             ${holoSwitch("autoplayCharacters", st.autoplayCharacters)}
           </label>
 
           <label class="set-row">
-            <span class="set-label">Master volume<small>Overall loudness</small></span>
+            <span class="set-label">Volume geral<small>Volume de todo o jogo</small></span>
             <span class="holo-range">
               <input type="range" min="0" max="1" step="0.05" data-setting="masterVolume" value="${Number(st.masterVolume) || 0}" />
               <span class="range-val">${pct}%</span>
@@ -305,15 +305,15 @@ export function renderSettings(state) {
         ${state.active && state.active.state ? renderGameSettings(state.active) : ""}
         <section class="holo-panel danger-zone">
           ${cardCorners()}
-          ${secHead("h3", "panel-head", "flame", "Danger")}
+          ${secHead("h3", "panel-head", "flame", "Perigo")}
           <div class="set-row">
-            <span class="set-label">Wipe all memory<small>Every adventure, its history, characters and images. No undo.</small></span>
-            <button type="button" class="holo-btn danger" data-act="ask-wipe">${icon("trash")}<span>Wipe all memory</span></button>
+            <span class="set-label">Apagar toda a memória<small>Todas as aventuras, históricos, personagens e imagens. Não pode ser desfeito.</small></span>
+            <button type="button" class="holo-btn danger" data-act="ask-wipe">${icon("trash")}<span>Apagar toda a memória</span></button>
           </div>
         </section>
         </div>
 
-        <p class="set-foot">${icon("radio")}<span>Game server linked automatically // media via same-origin proxy</span></p>
+        <p class="set-foot">${icon("radio")}<span>Servidor conectado automaticamente // mídia via proxy da mesma origem</span></p>
       </main>
       ${state.wipe ? renderWipeConfirm(state.wipe) : ""}
     </div>`;
@@ -324,14 +324,14 @@ export function renderSettings(state) {
 export function renderWipeConfirm(w) {
   return modalShell({
     overlayAct: "cancel-wipe",
-    title: "Wipe all memory?",
+    title: "Apagar toda a memória?",
     titleIcon: "flame",
-    body: `<p class="modal-body">This deletes EVERY adventure, its history, characters and images. There is no undo.</p>
-        ${w.stage > 1 ? `<p class="modal-body wipe-armed">Last chance. Click once more and it is all gone.</p>` : ""}`,
+    body: `<p class="modal-body">Isso exclui TODAS as aventuras, históricos, personagens e imagens. Não é possível desfazer.</p>
+        ${w.stage > 1 ? `<p class="modal-body wipe-armed">Última chance. Clique mais uma vez para apagar tudo.</p>` : ""}`,
     actions: `
-      <button class="holo-btn" data-act="cancel-wipe" ${w.busy ? "disabled" : ""}>Cancel</button>
+      <button class="holo-btn" data-act="cancel-wipe" ${w.busy ? "disabled" : ""}>Cancelar</button>
       <button class="holo-btn danger" data-act="confirm-wipe" ${w.busy ? "disabled" : ""}>
-        ${icon("trash")}<span>${w.busy ? "Erasing..." : w.stage > 1 ? "Yes, erase everything" : "Erase everything"}</span>
+        ${icon("trash")}<span>${w.busy ? "Apagando..." : w.stage > 1 ? "Sim, apagar tudo" : "Apagar tudo"}</span>
       </button>`,
   });
 }
@@ -353,11 +353,11 @@ function renderMemorySettings(g) {
   return `
     <section class="holo-panel memory-settings">
       ${cardCorners()}
-      ${secHead("h3", "panel-head", "gauge", "Story memory")}
-      <p class="set-note">The narrator re-reads the recent story word for word and automatically compresses everything older into a recap, so the story is never lost. 0 returns a control to its default.</p>
-      ${memRow("history_beats", st.historyBeats, "Memory depth", "How much recent story rides verbatim (8-400). Deeper = richer continuity, slower turns.", 8, 400, 4)}
-      ${memRow("summary_every", st.summaryEvery, "Auto-summarize every N turns", "How often older chapters fold into the recap (2-50).", 2, 50, 1)}
-      ${memRow("context_tokens", st.contextTokens, "Context budget (auto)", "Hard size target for the narrator's reading (4000-120000; 0 = off). This caps turn latency.", 4000, 120000, 1000)}
+      ${secHead("h3", "panel-head", "gauge", "Memória da história")}
+      <p class="set-note">O narrador relê a história recente palavra por palavra e resume automaticamente o conteúdo mais antigo. Use 0 para voltar ao padrão.</p>
+      ${memRow("history_beats", st.historyBeats, "Profundidade da memória", "Quanto da história recente permanece literal (8-400). Mais profundidade traz mais continuidade e turnos mais lentos.", 8, 400, 4)}
+      ${memRow("summary_every", st.summaryEvery, "Resumir automaticamente a cada N turnos", "Com que frequência capítulos antigos entram no resumo (2-50).", 2, 50, 1)}
+      ${memRow("context_tokens", st.contextTokens, "Orçamento de contexto (automático)", "Limite de leitura do narrador (4000-120000; 0 = desativado). Isso limita a demora do turno.", 4000, 120000, 1000)}
       ${contextMeter(g.state.context)}
     </section>`;
 }
@@ -366,9 +366,9 @@ function renderMemorySettings(g) {
 // is opened from inside a game. Difficulty is how much the world bends toward
 // the player; the narrator gender redesigns the voice from the next line.
 export const DIFFICULTY_COPY = {
-  easy: "The story bends toward you: attempts succeed, danger warns first, wishes come true.",
-  normal: "A fair world: the narrator weighs your attempts and your wishes on their merits.",
-  hard: "The world is strict: attempts can be refused, mistakes cost you, wishes are just whispers.",
+  easy: "A história favorece você: tentativas dão certo, o perigo avisa antes e desejos se realizam.",
+  normal: "Um mundo justo: o narrador avalia suas tentativas e desejos pelos próprios méritos.",
+  hard: "O mundo é rigoroso: tentativas podem falhar, erros têm custo e desejos são apenas sussurros.",
 };
 
 export function renderGameSettings(g) {
@@ -384,35 +384,35 @@ export function renderGameSettings(g) {
   return `
     <section class="holo-panel game-settings">
       ${cardCorners()}
-      ${secHead("h3", "panel-head", "sigil", "This adventure")}
+      ${secHead("h3", "panel-head", "sigil", "Esta aventura")}
 
       <fieldset class="set-group" data-group="difficulty">
-        <legend class="set-legend">Difficulty</legend>
-        ${radio("difficulty", "easy", gs.difficulty, "Easy", DIFFICULTY_COPY.easy)}
+        <legend class="set-legend">Dificuldade</legend>
+        ${radio("difficulty", "easy", gs.difficulty, "Fácil", DIFFICULTY_COPY.easy)}
         ${radio("difficulty", "normal", gs.difficulty, "Normal", DIFFICULTY_COPY.normal)}
-        ${radio("difficulty", "hard", gs.difficulty, "Hard", DIFFICULTY_COPY.hard)}
+        ${radio("difficulty", "hard", gs.difficulty, "Difícil", DIFFICULTY_COPY.hard)}
       </fieldset>
 
       <fieldset class="set-group" data-group="narrator_gender">
-        <legend class="set-legend">Narrator voice</legend>
-        ${radio("narrator_gender", "", gs.narratorGender, "Default", "The voice the world was born with")}
-        ${radio("narrator_gender", "female", gs.narratorGender, "Female", "Takes effect on the next spoken line")}
-        ${radio("narrator_gender", "male", gs.narratorGender, "Male", "Takes effect on the next spoken line")}
+        <legend class="set-legend">Voz do narrador</legend>
+        ${radio("narrator_gender", "", gs.narratorGender, "Padrão", "A voz com que o mundo nasceu")}
+        ${radio("narrator_gender", "female", gs.narratorGender, "Feminina", "Passa a valer na próxima fala")}
+        ${radio("narrator_gender", "male", gs.narratorGender, "Masculina", "Passa a valer na próxima fala")}
       </fieldset>
 
       <fieldset class="set-group" data-group="character_images">
-        <legend class="set-legend">Character pictures</legend>
-        <p class="set-note">Characters can show you what they are doing, now and then, as a picture of their own. Pictures still arrive in the background; this is how often one is allowed.</p>
-        ${radio("character_images", "off", gs.characterImages, "Off", "Only the narrator's images and your looks")}
-        ${radio("character_images", "sometimes", gs.characterImages, "Sometimes", "A rare moment, so it stays worth seeing")}
-        ${radio("character_images", "often", gs.characterImages, "Often", "Whenever a moment is worth it")}
+        <legend class="set-legend">Imagens dos personagens</legend>
+        <p class="set-note">Personagens podem mostrar o que estão fazendo em imagens ocasionais, criadas em segundo plano.</p>
+        ${radio("character_images", "off", gs.characterImages, "Desativadas", "Apenas imagens do narrador e dos seus olhares")}
+        ${radio("character_images", "sometimes", gs.characterImages, "Às vezes", "Momentos raros, para continuarem especiais")}
+        ${radio("character_images", "often", gs.characterImages, "Frequentemente", "Sempre que o momento valer a pena")}
       </fieldset>
 
       <fieldset class="set-group" data-group="turn_pacing">
-        <legend class="set-legend">Turn pacing</legend>
-        <p class="set-note">How crowded a single turn can get: how many characters the narrator may pull into one turn, and how many times each of them may act before the turn ends. Default lets the narrator pace itself.</p>
-        ${pacingSelect("turn_voices", gs.turnVoices, "Voices per turn", "Characters who may speak or act in one turn (1-4).", 4, saving)}
-        ${pacingSelect("turn_acts", gs.turnActs, "Acts per voice", "Times each of those may act before the turn ends (1-3).", 3, saving)}
+        <legend class="set-legend">Ritmo do turno</legend>
+        <p class="set-note">Defina quantos personagens podem participar de um turno e quantas vezes cada um pode agir. A opção Padrão deixa o narrador definir o ritmo.</p>
+        ${pacingSelect("turn_voices", gs.turnVoices, "Vozes por turno", "Personagens que podem falar ou agir em um turno (1-4).", 4, saving)}
+        ${pacingSelect("turn_acts", gs.turnActs, "Ações por voz", "Quantas vezes cada personagem pode agir antes do fim do turno (1-3).", 3, saving)}
       </fieldset>
 
     </section>`;
@@ -429,7 +429,7 @@ function pacingSelect(key, value, label, sub, max, saving) {
     <label class="set-row">
       <span class="set-label">${escapeHtml(label)}<small>${escapeHtml(sub)}</small></span>
       <select class="holo-input pace-select" data-game-setting="${key}" aria-label="${escapeHtml(label)}" ${saving}>
-        <option value="0">Default</option>
+        <option value="0">Padrão</option>
         ${options.join("")}
       </select>
     </label>`;

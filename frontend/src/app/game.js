@@ -46,12 +46,12 @@ export async function wipeEverything() {
     state.wipe = null;
     state.view = "library";
     render();
-    showToast("Everything is gone. A clean slate.");
+    showToast("Tudo foi apagado. Um novo começo.");
     refreshLibrary();
   } catch (err) {
     state.wipe = null;
     render();
-    showToast(err.message || "The wipe did not go through.");
+    showToast(err.message || "Não foi possível apagar os dados.");
   }
 }
 
@@ -61,7 +61,7 @@ export async function removeGame(id) {
   try {
     await api.deleteGame(id);
   } catch (err) {
-    showToast(err.message || "Could not delete that adventure.");
+    showToast(err.message || "Não foi possível excluir esta aventura.");
   }
   refreshLibrary();
 }
@@ -105,7 +105,7 @@ export async function openGame(gameId) {
     }
     state.active = null;
     state.view = "library";
-    showToast(err.message || "Could not open that adventure.");
+    showToast(err.message || "Não foi possível abrir esta aventura.");
     refreshLibrary();
   } finally {
     if (state.active) state.active.generating = false;
@@ -124,14 +124,14 @@ export async function exportGame(gameId, kind, title) {
   try {
     const data = await api.exportGame(gameId, kind);
     const slug =
-      String(title || "adventure")
+      String(title || "aventura")
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "") || "adventure";
+        .replace(/^-+|-+$/g, "") || "aventura";
     downloadJson(data, `${slug}-${kind}.json`);
-    showToast(kind === "template" ? "Adventure exported - share the file." : "This moment is saved.");
+    showToast(kind === "template" ? "Aventura exportada. Compartilhe o arquivo." : "Este momento foi salvo.");
   } catch (err) {
-    showToast(err.message || "Could not export this adventure.");
+    showToast(err.message || "Não foi possível exportar esta aventura.");
   } finally {
     state.exporting = false;
   }
@@ -158,7 +158,7 @@ export async function importGameFile(file) {
   try {
     payload = JSON.parse(await readFileText(file));
   } catch {
-    showToast("That file is not a gamentic export.");
+    showToast("Este arquivo não é uma exportação do Gamentic.");
     return;
   }
   state.importing = true;
@@ -169,7 +169,7 @@ export async function importGameFile(file) {
     openGame(res.game_id);
   } catch (err) {
     state.importing = false;
-    showToast(err.message || "That file is not a gamentic export.");
+    showToast(err.message || "Este arquivo não é uma exportação do Gamentic.");
     render();
   }
 }

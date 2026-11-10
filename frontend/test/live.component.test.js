@@ -16,12 +16,12 @@ const user = () => userEvent.setup({ delay: null });
 
 async function gotoPlay(u) {
   await mountApp();
-  await u.click(await screen.findByRole("button", { name: /enter your saved worlds/i }));
-  await u.click(await screen.findByRole("button", { name: /^enter$/i }));
+  await u.click(await screen.findByRole("button", { name: /entre nos mundos salvos/i }));
+  await u.click(await screen.findByRole("button", { name: /^entrar$/i }));
   await screen.findAllByText("The Last Breath");
 }
 
-const cmpBox = () => screen.getByRole("textbox", { name: /what you (do|say|look)/i });
+const cmpBox = () => screen.getByRole("textbox", { name: /o que você (faz|diz|observa)/i });
 const es = () => FakeEventSource.instances[FakeEventSource.instances.length - 1];
 const story = () => document.querySelector("#storyStream");
 
@@ -50,12 +50,12 @@ test("prose streams into the story as it generates, then the real beat swaps in 
   const release = pendingAction({ beats: [finalBeat], state: makeState(), stopped: false });
   await gotoPlay(u);
   await u.type(cmpBox(), "wait and listen");
-  await u.click(screen.getByRole("button", { name: /send/i }));
+  await u.click(screen.getByRole("button", { name: /enviar/i }));
 
   // the phase line says who is working, and the Stop button is offered
   es().emit({ kind: "phase", phase: "narrator" });
-  await waitFor(() => expect(screen.getByText(/the narrator is writing/i)).toBeTruthy());
-  expect(screen.getByRole("button", { name: /stop/i })).toBeTruthy();
+  await waitFor(() => expect(screen.getByText(/o narrador está escrevendo/i)).toBeTruthy());
+  expect(screen.getByRole("button", { name: /parar/i })).toBeTruthy();
 
   // streamed fragments GROW one narration in place - real streaming, no typewriter
   es().emit({ kind: "live_text", sid: "s1", op: "append", text: "The rain stops all at once,", speaker: "narrator", name: "Narrator", beat_kind: "narration", private_with: null });
@@ -73,7 +73,7 @@ test("prose streams into the story as it generates, then the real beat swaps in 
   // the POST resolves with the same beats: still one copy, indicator gone
   es().emit({ kind: "turn_done", turn_index: 2, stopped: false });
   release();
-  await waitFor(() => expect(screen.queryByText(/the narrator is writing/i)).toBeNull());
+  await waitFor(() => expect(screen.queryByText(/o narrador está escrevendo/i)).toBeNull());
   expect(screen.getAllByText(/street goes quiet\./).length).toBe(1);
 });
 
@@ -89,21 +89,21 @@ test("the Stop button cancels the turn: rollback honored, streamed text gone, wo
   const release = pendingAction({ beats: [], state: makeState(), stopped: true });
   await gotoPlay(u);
   await u.type(cmpBox(), "do something dramatic");
-  await u.click(screen.getByRole("button", { name: /send/i }));
+  await u.click(screen.getByRole("button", { name: /enviar/i }));
   es().emit({ kind: "phase", phase: "narrator" });
   es().emit({ kind: "live_text", sid: "s1", op: "append", text: "Words that will be taken back by the rollback.", speaker: "narrator", name: "Narrator", beat_kind: "narration", private_with: null });
   await waitFor(() => expect(within(story()).getByText(/taken back by the rollback/)).toBeTruthy());
 
-  await u.click(await screen.findByRole("button", { name: /^stop$/i }));
+  await u.click(await screen.findByRole("button", { name: /^parar$/i }));
   expect(stopped).toBe(true);
-  await waitFor(() => expect(screen.getByText(/stopping/i)).toBeTruthy());
+  await waitFor(() => expect(screen.getByText(/interrompendo/i)).toBeTruthy());
 
   es().emit({ kind: "turn_stopped" });
   es().emit({ kind: "turn_done", turn_index: null, stopped: true });
   release();
   // the turn never happened: streamed prose gone, echo gone, the player is told,
   // the lock lifts and the typed words return to the composer
-  await waitFor(() => expect(document.querySelector(".toast")?.textContent).toMatch(/stopped/i));
+  await waitFor(() => expect(document.querySelector(".toast")?.textContent).toMatch(/interrompido/i));
   await waitFor(() => expect(document.querySelector("#cmpInput").getAttribute("contenteditable")).toBe("true"));
   expect(within(story()).queryByText(/taken back by the rollback/)).toBeNull();
   expect(within(story()).queryByText(/do something dramatic/)).toBeNull();
@@ -116,7 +116,7 @@ test("the player's line never shows twice: the live canonical echo replaces the 
   const release = pendingAction({ beats: [echo], state: makeState(), stopped: false });
   await gotoPlay(u);
   await u.type(cmpBox(), "who is the ferryman?");
-  await u.click(screen.getByRole("button", { name: /send/i }));
+  await u.click(screen.getByRole("button", { name: /enviar/i }));
 
   // the optimistic echo is on screen; then the canonical echo arrives LIVE,
   // mid-generation (live: the prompt showed repeated for the whole turn)
@@ -137,7 +137,7 @@ test("a failed turn takes its live-streamed content back", async () => {
   const release = pendingAction(HttpResponse.json({ detail: "the narrator choked" }, { status: 500 }));
   await gotoPlay(u);
   await u.type(cmpBox(), "poke the hornet nest");
-  await u.click(screen.getByRole("button", { name: /send/i }));
+  await u.click(screen.getByRole("button", { name: /enviar/i }));
 
   es().emit({ kind: "live_text", sid: "s1", op: "append", text: "A provisional sentence that will be rolled back.", speaker: "narrator", name: "Narrator", beat_kind: "narration", private_with: null });
   es().emit({ kind: "live_beat", beat: makeBeat({ id: "doomed", turn_index: 2, kind: "system", speaker: "system", speaker_name: null, text: "An uncommitted receipt." }) });
@@ -156,12 +156,12 @@ test("a whisper streams into the private thread, never the public story", async 
   );
   const release = pendingAction({ beats: [], state: makeState(), stopped: false });
   await gotoPlay(u);
-  await u.click(screen.getByRole("button", { name: /open jacker's profile/i }));
-  await screen.findByRole("dialog", { name: /jacker's profile/i });
+  await u.click(screen.getByRole("button", { name: /abrir perfil de jacker/i }));
+  await screen.findByRole("dialog", { name: /perfil de jacker/i });
   const profileEl = () => document.querySelector(".profile-screen");
-  await waitFor(() => expect(within(profileEl()).getByRole("tab", { name: /whisper/i })).toBeTruthy());
-  await u.click(within(profileEl()).getByRole("tab", { name: /whisper/i }));
-  await u.type(within(profileEl()).getByRole("textbox", { name: /what you say/i }), "what do you know");
+  await waitFor(() => expect(within(profileEl()).getByRole("tab", { name: /sussurr/i })).toBeTruthy());
+  await u.click(within(profileEl()).getByRole("tab", { name: /sussurr/i }));
+  await u.type(within(profileEl()).getByRole("textbox", { name: /o que você diz/i }), "what do you know");
   await u.keyboard("{Enter}");
 
   // the canonical PRIVATE echo arrives live: it replaces the optimistic one in
@@ -203,7 +203,7 @@ test("a turn taken elsewhere (no POST of ours) still lands live and reconciles o
   await waitFor(() => expect(within(story()).getByText(/another hand moves the story/)).toBeTruthy());
   es().emit({ kind: "turn_done", turn_index: 4, stopped: false });
   // reconciliation keeps exactly one copy and clears the phase line
-  await waitFor(() => expect(screen.queryByText(/the narrator is writing/i)).toBeNull());
+  await waitFor(() => expect(screen.queryByText(/o narrador está escrevendo/i)).toBeNull());
   expect(screen.getAllByText(/another hand moves the story/).length).toBe(1);
 });
 
@@ -217,18 +217,18 @@ test("a public live line does NOT autoplay while a whisper window is open; it do
   const u = user();
   server.use(http.get(`${API}/games/:id/characters/:cid/profile`, () => HttpResponse.json(makeProfile())));
   const app = await mountApp();
-  await u.click(await screen.findByRole("button", { name: /enter your saved worlds/i }));
-  await u.click(await screen.findByRole("button", { name: /^enter$/i }));
+  await u.click(await screen.findByRole("button", { name: /entre nos mundos salvos/i }));
+  await u.click(await screen.findByRole("button", { name: /^entrar$/i }));
   await screen.findAllByText("The Last Breath");
   app.state.settings.autoplayNarrator = true;
   const prepared = vi.spyOn(app.voice, "prepare").mockResolvedValue({ audioUrl: "/audio/n.wav", duration: 1 });
   const queued = vi.spyOn(app.voice, "playQueued").mockResolvedValue(undefined);
 
   // into Jacker's whisper window
-  await u.click(screen.getByRole("button", { name: /open jacker's profile/i }));
-  await screen.findByRole("dialog", { name: /jacker's profile/i });
-  await waitFor(() => expect(within(document.querySelector(".profile-screen")).getByRole("tab", { name: /whisper/i })).toBeTruthy());
-  await u.click(within(document.querySelector(".profile-screen")).getByRole("tab", { name: /whisper/i }));
+  await u.click(screen.getByRole("button", { name: /abrir perfil de jacker/i }));
+  await screen.findByRole("dialog", { name: /perfil de jacker/i });
+  await waitFor(() => expect(within(document.querySelector(".profile-screen")).getByRole("tab", { name: /sussurr/i })).toBeTruthy());
+  await u.click(within(document.querySelector(".profile-screen")).getByRole("tab", { name: /sussurr/i }));
 
   // a public narration lands live: eyes are in the whisper window, so SILENCE
   es().emit({ kind: "live_beat", beat: makeBeat({ id: "pub1", turn_index: 3, text: "Far off, the market roars." }) });
@@ -237,7 +237,7 @@ test("a public live line does NOT autoplay while a whisper window is open; it do
   expect(queued).not.toHaveBeenCalled();
 
   // back to the scene: the next public line speaks, through the QUEUE
-  await u.click(within(document.querySelector(".profile-screen")).getByRole("button", { name: /back to the scene/i }));
+  await u.click(within(document.querySelector(".profile-screen")).getByRole("button", { name: /voltar para a cena/i }));
   es().emit({ kind: "live_beat", beat: makeBeat({ id: "pub2", turn_index: 3, text: "The rain returns." }) });
   await waitFor(() => expect(queued).toHaveBeenCalledWith("/audio/n.wav", "narrator"));
   expect(prepared).toHaveBeenCalledTimes(1);
@@ -252,8 +252,8 @@ test("a private live line autoplays ONLY inside its whisper window", async () =>
     http.get(`${API}/games/:id/characters/:cid/profile`, () => HttpResponse.json(makeProfile())),
   );
   const app = await mountApp();
-  await u.click(await screen.findByRole("button", { name: /enter your saved worlds/i }));
-  await u.click(await screen.findByRole("button", { name: /^enter$/i }));
+  await u.click(await screen.findByRole("button", { name: /entre nos mundos salvos/i }));
+  await u.click(await screen.findByRole("button", { name: /^entrar$/i }));
   await screen.findAllByText("The Last Breath");
   app.state.settings.autoplayCharacters = true;
   const prepared = vi.spyOn(app.voice, "prepare").mockResolvedValue({ audioUrl: "/audio/w.wav", duration: 1 });
@@ -268,10 +268,10 @@ test("a private live line autoplays ONLY inside its whisper window", async () =>
   expect(queued).not.toHaveBeenCalled();
 
   // inside Jacker's whisper window: the next private line speaks, queued
-  await u.click(screen.getByRole("button", { name: /open jacker's profile/i }));
-  await screen.findByRole("dialog", { name: /jacker's profile/i });
-  await waitFor(() => expect(within(document.querySelector(".profile-screen")).getByRole("tab", { name: /whisper/i })).toBeTruthy());
-  await u.click(within(document.querySelector(".profile-screen")).getByRole("tab", { name: /whisper/i }));
+  await u.click(screen.getByRole("button", { name: /abrir perfil de jacker/i }));
+  await screen.findByRole("dialog", { name: /perfil de jacker/i });
+  await waitFor(() => expect(within(document.querySelector(".profile-screen")).getByRole("tab", { name: /sussurr/i })).toBeTruthy());
+  await u.click(within(document.querySelector(".profile-screen")).getByRole("tab", { name: /sussurr/i }));
   es().emit({ kind: "live_beat", beat: priv("pw2", "Good. Lean closer.") });
   await waitFor(() => expect(queued).toHaveBeenCalledWith("/audio/w.wav", "c1"));
   expect(prepared).toHaveBeenCalledTimes(1);
@@ -289,15 +289,15 @@ test("a stacked turn's echoes land one per line, in place, each keeping its own 
   const release = pendingAction({ beats: [...wireEchoes, narration], state: makeState(), stopped: false });
   await gotoPlay(u);
   // stack [do, say] and send with a third DO line: one turn, three lines
-  await u.click(screen.getByRole("button", { name: /^do$/i }));
+  await u.click(screen.getByRole("button", { name: /^fazer$/i }));
   await u.type(cmpBox(), "check the door");
-  await u.click(screen.getByRole("button", { name: /stack this line/i }));
-  await u.click(screen.getByRole("button", { name: /^say$/i }));
+  await u.click(screen.getByRole("button", { name: /empilhar esta linha/i }));
+  await u.click(screen.getByRole("button", { name: /^dizer$/i }));
   await u.type(cmpBox(), "we should run");
-  await u.click(screen.getByRole("button", { name: /stack this line/i }));
-  await u.click(screen.getByRole("button", { name: /^do$/i }));
+  await u.click(screen.getByRole("button", { name: /empilhar esta linha/i }));
+  await u.click(screen.getByRole("button", { name: /^fazer$/i }));
   await u.type(cmpBox(), "bolt for the window");
-  await u.click(screen.getByRole("button", { name: /send/i }));
+  await u.click(screen.getByRole("button", { name: /enviar/i }));
 
   // three optimistic lines show, in the stacked order
   await waitFor(() => expect(document.querySelectorAll('#storyStream [data-beat-id^="pending-"]').length).toBe(3));

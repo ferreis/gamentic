@@ -93,7 +93,7 @@ def message(session_id: str, user_message: str) -> dict:
     # tool's own one-line summary becomes the reply so the turn still reads like a turn.
     if not text and called:
         summary = str(called.arguments.get("summary") or "").strip()
-        text = f"{summary}\n\nSay the word and we begin." if summary else "Say the word and we begin."
+        text = f"{summary}\n\nÉ só dizer e começamos." if summary else "É só dizer e começamos."
     history.append({"role": "user", "content": user_message})
     # The marker is RE-APPENDED to the stored copy (live: the model said "when YOU are
     # ready" - no prose signal - so a refresh lost the unlocked button; the stored

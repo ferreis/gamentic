@@ -88,7 +88,7 @@ export function showHelp(el) {
   }
   const pop = document.createElement("div");
   pop.className = "help-pop";
-  pop.textContent = HELP[el.dataset.help] || "Part of the game.";
+  pop.textContent = HELP[el.dataset.help] || "Parte do jogo.";
   document.body.appendChild(pop);
   const r = el.getBoundingClientRect();
   pop.style.top = `${helpPopTop(r, pop.offsetHeight, window.innerHeight, window.scrollY)}px`;

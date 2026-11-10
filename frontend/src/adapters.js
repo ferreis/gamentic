@@ -38,7 +38,7 @@ const PLAYER_INV_SLOTS = 6;
 export function mapGameState(state = {}) {
   const characters = (state.characters || []).map((c, i) => ({
     id: c.id,
-    name: c.name || "Unknown",
+    name: c.name || "Desconhecido",
     description: c.description || "",
     voiceId: c.voice_id || null,
     color: c.color || PALETTE[i % PALETTE.length],
@@ -72,7 +72,7 @@ export function mapGameState(state = {}) {
   const player = state.player || {};
   return {
     gameId: state.game_id || null,
-    title: state.title || "Untitled Adventure",
+    title: state.title || "Aventura sem título",
     status: state.status || "active", // story FSM: active | won | lost
     sceneStatus: state.scene_status || (state.scene && state.scene.status) || null,
     currentGoal: state.current_goal || "",
@@ -114,7 +114,7 @@ export function mapGameState(state = {}) {
     },
     quests: (state.quests || []).map((q) => ({
       id: q.id,
-      title: q.title || "Quest",
+      title: q.title || "Missão",
       description: q.description || "",
       status: q.status || "active",
       objectives: (q.objectives || []).map((o) => ({
@@ -250,7 +250,7 @@ export function presentCharacters(mappedState) {
 export function mapProfile(p = {}) {
   return {
     id: p.id,
-    name: p.name || "Unknown",
+    name: p.name || "Desconhecido",
     description: p.description || "",
     gender: p.gender || "",
     relation: String(p.relation || "").replace(/_/g, " "),

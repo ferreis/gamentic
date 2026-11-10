@@ -149,7 +149,7 @@ test("exits are NOT capped at 3 (auto back-exit can make 4) and back is flagged"
 
 test("tolerates missing fields without throwing", () => {
   const s = mapGameState({});
-  assert.equal(s.title, "Untitled Adventure");
+  assert.equal(s.title, "Aventura sem título");
   assert.equal(s.narratorVoiceId, null);
   assert.deepEqual(s.characters, []);
   assert.equal(s.player.life, 0);

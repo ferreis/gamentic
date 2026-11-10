@@ -34,7 +34,7 @@ export function openLightbox(src, alt) {
   ov.className = "lightbox-overlay";
   ov.setAttribute("role", "dialog");
   ov.setAttribute("aria-modal", "true");
-  ov.setAttribute("aria-label", alt || "Image viewer");
+  ov.setAttribute("aria-label", alt || "Visualizador de imagem");
   const img = document.createElement("img");
   img.src = src;
   img.alt = alt;

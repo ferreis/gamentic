@@ -1,7 +1,7 @@
 // Tap-to-inspect: the detail modal over items, the goal, quests, receipts.
 
 import { icon } from "../icons.js";
-import { escapeHtml } from "./common.js";
+import { escapeHtml, titleCase } from "./common.js";
 import { artImg, iconBtn, modalShell, narratingDots } from "./widgets.js";
 
 // ---------------------------------------------------------------------------
@@ -18,13 +18,13 @@ export function renderInspectModal(s, g) {
     <div class="ins-ask">
       ${
         ins.asking
-          ? narratingDots("the narrator considers...")
+          ? narratingDots("o narrador está pensando...")
           : ins.answer != null
             ? `<p class="ins-answer">${escapeHtml(ins.answer)}</p>`
             : ""
       }
       <button type="button" class="holo-btn" data-act="inspect-ask" ${ins.asking ? "disabled" : ""}>
-        ${icon("sparkles")}<span>${ins.answer != null ? "Ask again" : "Ask what this is"}</span>
+        ${icon("sparkles")}<span>${ins.answer != null ? "Perguntar novamente" : "Perguntar o que é isto"}</span>
       </button>
     </div>`;
 
@@ -37,7 +37,7 @@ export function renderInspectModal(s, g) {
     ariaLabel: view.title,
     header: `<header class="ins-head">
           <h3 class="ins-title">${escapeHtml(view.title)}</h3>
-          ${iconBtn({ act: "close-inspect", icon: "x", label: "Close" })}
+          ${iconBtn({ act: "close-inspect", icon: "x", label: "Fechar" })}
         </header>`,
     body: `${view.body}
         ${view.actions ? `<div class="ins-actions">${view.actions}</div>` : ""}
@@ -51,14 +51,14 @@ export function inspectView(s, g, ins) {
   if (ins.kind === "goal") return inspectGoal(s);
   if (ins.kind === "quest") return inspectQuest(s, ins);
   if (ins.kind === "beat") return inspectBeat(g, ins);
-  return { title: "Unknown", body: `<p class="modal-body">Nothing to see.</p>`, actions: "" };
+  return { title: "Desconhecido", body: `<p class="modal-body">Não há nada para ver.</p>`, actions: "" };
 }
 
 export function findInspectItem(s, key) {
   const pools = [
-    ...(((s.scene && s.scene.items) || []).map((it) => ({ ...it, where: "here in the scene", inScene: true }))),
-    ...((s.player.inventory || []).map((it) => ({ ...it, where: "in your pack" }))),
-    ...((s.characters || []).flatMap((c) => (c.inventory || []).map((it) => ({ ...it, where: `carried by ${c.name}` })))),
+    ...(((s.scene && s.scene.items) || []).map((it) => ({ ...it, where: "aqui na cena", inScene: true }))),
+    ...((s.player.inventory || []).map((it) => ({ ...it, where: "na sua mochila" }))),
+    ...((s.characters || []).flatMap((c) => (c.inventory || []).map((it) => ({ ...it, where: `com ${c.name}` })))),
   ];
   return pools.find((it) => (it.id && it.id === key) || it.name === key) || null;
 }
@@ -74,17 +74,17 @@ export function inspectImage(url, alt, caption = "") {
 
 export function inspectItem(s, ins, g) {
   const it = findInspectItem(s, ins.key);
-  if (!it) return { title: "Gone", body: `<p class="modal-body">It is no longer here.</p>`, actions: "" };
+  if (!it) return { title: "Sumiu", body: `<p class="modal-body">Isto não está mais aqui.</p>`, actions: "" };
   const locked = Boolean(g.generating);
   const tags = [
     it.where,
     it.qty > 1 ? `x${it.qty}` : "",
-    it.inScene ? (it.fixed ? "part of the scene" : "can be taken") : "",
+    it.inScene ? (it.fixed ? "parte da cena" : "pode ser levado") : "",
   ].filter(Boolean);
   const actions = it.inScene
     ? it.fixed
-      ? `<button type="button" class="holo-btn" data-act="examine-item" data-item-name="${escapeHtml(it.name)}" ${locked ? "disabled" : ""}>${icon("eye")}<span>Examine ${escapeHtml(it.name)}</span></button>`
-      : `<button type="button" class="holo-btn primary" data-act="take-item" data-item-name="${escapeHtml(it.name)}" ${locked ? "disabled" : ""}>${icon("plus")}<span>Take ${escapeHtml(it.name)}</span></button>`
+      ? `<button type="button" class="holo-btn" data-act="examine-item" data-item-name="${escapeHtml(it.name)}" ${locked ? "disabled" : ""}>${icon("eye")}<span>Examinar ${escapeHtml(it.name)}</span></button>`
+      : `<button type="button" class="holo-btn primary" data-act="take-item" data-item-name="${escapeHtml(it.name)}" ${locked ? "disabled" : ""}>${icon("plus")}<span>Pegar ${escapeHtml(it.name)}</span></button>`
     : "";
   return {
     title: it.name,
@@ -103,16 +103,16 @@ export function inspectItem(s, ins, g) {
 // narrator writes `background` as the game goes; empty = nothing yet).
 function inspectScene(s) {
   const scene = s.scene;
-  if (!scene) return { title: "Nowhere", body: `<p class="modal-body">No place to speak of.</p>`, actions: "" };
+  if (!scene) return { title: "Lugar nenhum", body: `<p class="modal-body">Não há lugar para descrever.</p>`, actions: "" };
   return {
-    title: scene.name || "This place",
+    title: scene.name || "Este lugar",
     body: `
       ${inspectImage(scene.imageUrl, scene.name, scene.description)}
-      <p class="ins-tags"><span class="mood-badge mood-${escapeHtml(scene.status)}">${escapeHtml(scene.status)}</span></p>
+      <p class="ins-tags"><span class="mood-badge mood-${escapeHtml(scene.status)}">${escapeHtml(titleCase(scene.status))}</span></p>
       ${scene.description ? `<p class="modal-body">${escapeHtml(scene.description)}</p>` : ""}
       ${
         scene.background
-          ? `<h4 class="ins-sub">What this place is</h4>
+          ? `<h4 class="ins-sub">O que é este lugar</h4>
              <p class="modal-body scene-background">${escapeHtml(scene.background)}</p>`
           : ""
       }`,
@@ -132,17 +132,17 @@ export function inspectGoal(s) {
     )
     .join("");
   return {
-    title: "Current goal",
+    title: "Objetivo atual",
     body: `
-      <p class="modal-body goal-line">${icon("compass")}<span>${escapeHtml(s.currentGoal || "No goal right now.")}</span></p>
-      ${quests.length ? `<p class="ins-tags"><span class="ins-tag">quest log</span></p>${questRows}` : ""}`,
+      <p class="modal-body goal-line">${icon("compass")}<span>${escapeHtml(s.currentGoal || "Não há objetivo agora.")}</span></p>
+      ${quests.length ? `<p class="ins-tags"><span class="ins-tag">registro de missões</span></p>${questRows}` : ""}`,
     actions: "",
   };
 }
 
 export function inspectQuest(s, ins) {
   const q = (s.quests || []).find((x) => x.id === ins.key);
-  if (!q) return { title: "Quest", body: `<p class="modal-body">That thread of the story is gone.</p>`, actions: "" };
+  if (!q) return { title: "Missão", body: `<p class="modal-body">Esse fio da história desapareceu.</p>`, actions: "" };
   const objectives = q.objectives
     .map(
       (o) => `
@@ -163,7 +163,7 @@ export function inspectQuest(s, ins) {
 export function inspectBeat(g, ins) {
   const beat = g.beats.find((b) => b.id === ins.beatId);
   return {
-    title: "What just happened",
+    title: "O que acabou de acontecer",
     body: `<p class="modal-body">${escapeHtml((beat && beat.text) || "")}</p>`,
     actions: "",
   };

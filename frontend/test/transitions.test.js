@@ -72,7 +72,7 @@ test("buildNotices renders human-readable notices for the changes", () => {
   const a = st({ characters: [base] });
   const b = st({ current_goal: "Run", characters: [{ ...base, following: true }], scene: { id: "s2", name: "Alley", exits: [], items: [], available_actions: [] }, player: { location: "Alley" } });
   const texts = buildNotices(diffState(a, b)).map((n) => n.text);
-  assert.ok(texts.some((t) => /Entered Alley/.test(t)));
-  assert.ok(texts.some((t) => /Vera now follows you/.test(t)));
-  assert.ok(texts.some((t) => /New goal: Run/.test(t)));
+  assert.ok(texts.some((t) => /Você entrou em Alley/.test(t)));
+  assert.ok(texts.some((t) => /Vera agora segue você/.test(t)));
+  assert.ok(texts.some((t) => /Novo objetivo: Run/.test(t)));
 });

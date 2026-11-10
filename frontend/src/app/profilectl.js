@@ -91,7 +91,7 @@ export async function refreshProfile(g) {
     pf.error = "";
   } catch (err) {
     if (g.profile !== pf) return;
-    if (!pf.data) pf.error = err.status === 404 ? "No trace of them remains." : "Their story is out of reach right now.";
+    if (!pf.data) pf.error = err.status === 404 ? "Não restou nenhum vestígio." : "A história dessa pessoa está inacessível agora.";
   } finally {
     if (g.profile === pf) {
       pf.loading = false;

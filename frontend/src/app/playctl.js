@@ -14,7 +14,7 @@ import { render } from "./ui.js";
 // anything else stays a freeform do with the button's label.
 export function takeSceneAction(type, label) {
   if (type === "look") return takeTurn([{ type: "look", text: "" }]);
-  if (type === "search") return takeTurn([{ type: "look", text: "for anything hidden or useful here" }]);
+  if (type === "search") return takeTurn([{ type: "look", text: "por algo escondido ou útil aqui" }]);
   takeTurn([{ type: "do", text: label }]);
 }
 
@@ -64,7 +64,7 @@ export async function doExplain() {
     const res = await api.explain(g.id, payload);
     ins.answer = (res && res.text) || "";
   } catch (err) {
-    ins.answer = err.status === 404 ? "Nothing more can be seen." : "The narrator is silent right now.";
+    ins.answer = err.status === 404 ? "Não há mais nada para ver." : "O narrador está em silêncio agora.";
   } finally {
     if (g.inspect === ins) {
       ins.asking = false;
@@ -122,7 +122,7 @@ export function openTagger(btn) {
   const pop = document.createElement("div");
   pop.className = "tagger-pop";
   pop.setAttribute("role", "listbox");
-  pop.setAttribute("aria-label", "Tag a character or item");
+  pop.setAttribute("aria-label", "Marcar personagem ou item");
   pop.innerHTML = entities.length
     ? entities
         .map(
@@ -132,7 +132,7 @@ export function openTagger(btn) {
              </button>`,
         )
         .join("")
-    : `<p class="tag-empty">Nothing here to tag yet.</p>`;
+    : `<p class="tag-empty">Ainda não há nada aqui para marcar.</p>`;
   pop.querySelectorAll(".tag-opt span").forEach((span, i) => {
     span.textContent = entities[i].name;
   });

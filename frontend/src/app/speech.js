@@ -65,10 +65,10 @@ export function setSpeaking(next) {
 // in-flight queue / live playback decide. voice.onStatus repaints these as
 // prepares land and as playback starts and ends.
 const SPEAK_LABEL = {
-  generating: "Preparing voice...",
-  ready: "Play voice (ready)",
-  playing: "Stop voice",
-  idle: "Play voice",
+  generating: "Preparando voz...",
+  ready: "Reproduzir voz (pronta)",
+  playing: "Parar voz",
+  idle: "Reproduzir voz",
 };
 
 function speakState(g, id) {

@@ -59,7 +59,7 @@ test("stacked segments render as removable rows", () => {
   });
   const rows = root.querySelectorAll(".seg-stack .seg-row");
   assert.equal(rows.length, 2);
-  assert.ok(/Say -> Mara: hello/.test(rows[0].textContent));
+  assert.ok(/Dizer -> Mara: hello/.test(rows[0].textContent));
   assert.ok(rows[0].querySelector('[data-act="cmp-unstack"][data-index="0"]'), "row is removable");
 });
 

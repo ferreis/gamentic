@@ -96,9 +96,9 @@ test("buildSegment: private channel -> conversation segments with mode say|do", 
 });
 
 test("describeSegment reads as a human line", () => {
-  assert.equal(describeSegment({ type: "say", text: "hello", target: "Mara" }), "Say -> Mara: hello");
-  assert.equal(describeSegment({ type: "do", text: "kick" }), "Do: kick");
-  assert.equal(describeSegment({ type: "conversation", mode: "do", text: "pass key", target: "Mara" }), "Discreetly -> Mara: pass key");
+  assert.equal(describeSegment({ type: "say", text: "hello", target: "Mara" }), "Dizer -> Mara: hello");
+  assert.equal(describeSegment({ type: "do", text: "kick" }), "Fazer: kick");
+  assert.equal(describeSegment({ type: "conversation", mode: "do", text: "pass key", target: "Mara" }), "Discretamente -> Mara: pass key");
 });
 
 test("typed structural symbols are normalized at the input (owner: they broke the chat)", async () => {

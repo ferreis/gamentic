@@ -51,7 +51,7 @@ export async function patchGameSettings(key, value) {
     if (res && "narrator_voice_id" in res) g.state.narratorVoiceId = res.narrator_voice_id || null;
     state.backendOnline = true;
   } catch (err) {
-    showToast(err.message || "Could not change that setting.");
+    showToast(err.message || "Não foi possível alterar esta configuração.");
   } finally {
     g.settingsSaving = false;
     render();

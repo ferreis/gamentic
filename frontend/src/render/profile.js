@@ -18,11 +18,10 @@ export function profilePresence(s, d) {
 }
 
 export function absenceLine(d, stateChar, alive) {
-  const pron = d.gender === "female" ? "She" : d.gender === "male" ? "He" : "They";
-  const verb = d.gender ? "is" : "are";
-  if (!alive) return `${pron} ${verb} gone.`;
-  const where = stateChar && stateChar.location ? ` - at ${titleCase(stateChar.location)}.` : ".";
-  return `${pron} ${verb} elsewhere${where}`;
+  const pron = d.gender === "female" ? "Ela" : d.gender === "male" ? "Ele" : "A pessoa";
+  if (!alive) return `${pron} não está mais aqui.`;
+  const where = stateChar && stateChar.location ? ` — em ${titleCase(stateChar.location)}.` : ".";
+  return `${pron} está em outro lugar${where}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -40,18 +39,18 @@ export function renderProfile(s, g) {
 
   let body;
   if (pf.loading && !d) {
-    body = narratingDots(`remembering ${name}...`, "profile-loading");
+    body = narratingDots(`lembrando de ${name}...`, "profile-loading");
   } else if (!d) {
-    body = `<p class="modal-body">${escapeHtml(pf.error || "No trace of them remains.")}</p>`;
+    body = `<p class="modal-body">${escapeHtml(pf.error || "Não restou nenhum vestígio.")}</p>`;
   } else {
     body = profileBody(s, g, d);
   }
 
   return `
-    <div class="profile-screen${pf.arrive ? " arrive" : ""}" role="dialog" aria-modal="true" aria-label="${escapeHtml(name)}'s profile" style="--speaker:${escapeHtml(color)}">
+    <div class="profile-screen${pf.arrive ? " arrive" : ""}" role="dialog" aria-modal="true" aria-label="Perfil de ${escapeHtml(name)}" style="--speaker:${escapeHtml(color)}">
       ${holoFx()}
       <header class="profile-bar">
-        <button type="button" class="holo-icon" data-act="close-profile" aria-label="Back to the scene" title="Back to the scene">${icon("chevronLeft")}</button>
+        <button type="button" class="holo-icon" data-act="close-profile" aria-label="Voltar para a cena" title="Voltar para a cena">${icon("chevronLeft")}</button>
         <span class="hud-tag">// ${escapeHtml(name.toUpperCase())}</span>
       </header>
       <div class="profile-main">${body}</div>
@@ -62,13 +61,13 @@ export function renderProfile(s, g) {
 // Traits (the personality card collection), Memory (shared moments + image
 // memories), Whisper (the private channel). The art + name stay on the left.
 export const PROFILE_TABS = [
-  { id: "profile", label: "Profile", icon: "mask" },
-  { id: "traits", label: "Traits", icon: "sparkles" },
-  { id: "memory", label: "Memories", icon: "eye" },
-  { id: "whisper", label: "Whisper", icon: "mic" },
+  { id: "profile", label: "Perfil", icon: "mask" },
+  { id: "traits", label: "Traços", icon: "sparkles" },
+  { id: "memory", label: "Memórias", icon: "eye" },
+  { id: "whisper", label: "Sussurro", icon: "mic" },
 ];
 
-export const GROW_NOTE = `<p class="profile-empty muted">The more you interact with your characters, the more their traits and personality will grow from your interactions.</p>`;
+export const GROW_NOTE = `<p class="profile-empty muted">Quanto mais você interage com seus personagens, mais os traços e a personalidade deles crescem com essas interações.</p>`;
 
 export function profileBody(s, g, d) {
   const pf = g.profile;
@@ -80,8 +79,8 @@ export function profileBody(s, g, d) {
   const uniqViews = views.filter((u, i) => views.indexOf(u) === i);
   const idx = uniqViews.length ? (((pf.imgIndex || 0) % uniqViews.length) + uniqViews.length) % uniqViews.length : 0;
   const cycler = uniqViews.length > 1
-    ? `<button type="button" class="art-cycle prev" data-act="profile-img-prev" aria-label="Previous image">${icon("chevronLeft")}</button>
-       <button type="button" class="art-cycle next" data-act="profile-img-next" aria-label="Next image">${icon("chevronLeft")}</button>
+    ? `<button type="button" class="art-cycle prev" data-act="profile-img-prev" aria-label="Imagem anterior">${icon("chevronLeft")}</button>
+       <button type="button" class="art-cycle next" data-act="profile-img-next" aria-label="Próxima imagem">${icon("chevronLeft")}</button>
        <span class="art-dots" aria-hidden="true">${uniqViews.map((_, i) => `<i class="${i === idx ? "on" : ""}"></i>`).join("")}</span>`
     : "";
   // every view sits in the same fixed tall frame: the square face view rides a
@@ -95,7 +94,7 @@ export function profileBody(s, g, d) {
   // two surfaces): a character who whispered while another tab was open shows it
   const unread = unreadBadge(unreadPmCount(g, pf.charId), "on-tab");
   const tabBar = `
-    <div class="profile-tabs" role="tablist" aria-label="Character view">
+    <div class="profile-tabs" role="tablist" aria-label="Visualização do personagem">
       ${PROFILE_TABS.map(
         (t) =>
           `<button type="button" role="tab" class="profile-tab${tab === t.id ? " active" : ""}" aria-selected="${tab === t.id}"
@@ -143,25 +142,25 @@ export function profileStatusPane(s, d, locked = false) {
   const sparse = !d.traits.length && d.moments.length < 3;
   const origin = d.origin.length
     ? `<section class="profile-sec">
-         ${secHead("h4", "profile-sec-head", "scroll", "Their past")}
+         ${secHead("h4", "profile-sec-head", "scroll", "Passado")}
          <ul class="trait-list origin-list">
-           ${d.origin.map((o) => traitLi(o.text, "learned:", o.learned, "origin")).join("")}
+           ${d.origin.map((o) => traitLi(o.text, "descoberto:", o.learned, "origin")).join("")}
          </ul>
        </section>`
     : "";
   return `
     <div class="profile-id">
       <p class="ins-tags">
-        ${d.gender ? `<span class="ins-tag">${escapeHtml(d.gender)}</span>` : ""}
+        ${d.gender ? `<span class="ins-tag">${escapeHtml(titleCase(d.gender))}</span>` : ""}
         ${dispositionBadges(d)}
-        ${d.following ? `<span class="ins-tag">following you</span>` : ""}
-        ${!d.alive ? `<span class="ins-tag">fallen</span>` : ""}
+        ${d.following ? `<span class="ins-tag">segue você</span>` : ""}
+        ${!d.alive ? `<span class="ins-tag">morto</span>` : ""}
       </p>
       ${hp}
       ${d.description ? `<p class="modal-body">${escapeHtml(d.description)}</p>` : ""}
-      ${stateChar ? contextMeter(stateChar.context, { mini: true, label: `${d.name}'s memory` }) : ""}
+      ${stateChar ? contextMeter(stateChar.context, { mini: true, label: `Memória de ${d.name}` }) : ""}
       <div class="char-inv">
-        <span class="inv-mini-label">Carrying</span>
+        <span class="inv-mini-label">Carregando</span>
         ${slotGrid(d.carrying, 3, "char-items")}
       </div>
       ${actionsSection(d, stateChar, locked, presence)}
@@ -177,7 +176,7 @@ function actionsSection(d, stateChar, locked, presence) {
   if (!presence.present) {
     return `
       <section class="profile-sec">
-        ${secHead("h4", "profile-sec-head", "zap", "Actions")}
+        ${secHead("h4", "profile-sec-head", "zap", "Ações")}
         <p class="absence-line">${escapeHtml(absenceLine(d, stateChar, presence.alive))}</p>
       </section>`;
   }
@@ -185,7 +184,7 @@ function actionsSection(d, stateChar, locked, presence) {
   if (!actions.length) return "";
   return `
     <section class="profile-sec">
-      ${secHead("h4", "profile-sec-head", "zap", "Actions")}
+      ${secHead("h4", "profile-sec-head", "zap", "Ações")}
       <div class="char-actions profile-actions">
         ${actions.map((a) => charActionBtn(a, stateChar, locked)).join("")}
       </div>
@@ -197,7 +196,7 @@ export function profileTraitsPane(d) {
   if (!d.traits.length) return GROW_NOTE;
   return `
     <ul class="trait-list">
-      ${d.traits.map((t) => traitLi(t.text, "unlocked:", t.unlocked)).join("")}
+      ${d.traits.map((t) => traitLi(t.text, "revelado:", t.unlocked)).join("")}
     </ul>`;
 }
 
@@ -209,16 +208,16 @@ export function profileMemoryPane(d) {
   // skip it rather than show a broken <img> (it fills in on a later refetch)
   const ready = d.memories.filter((m) => m.imageUrl);
   if (!d.moments.length && !ready.length) {
-    return `<p class="profile-empty muted">Nothing shared yet. The moments you live together will gather here.</p>`;
+    return `<p class="profile-empty muted">Ainda não há nada compartilhado. Os momentos vividos juntos aparecerão aqui.</p>`;
   }
   const memories = ready.length
     ? `<section class="profile-sec">
-         ${secHead("h4", "profile-sec-head", "eye", "Memories")}
+         ${secHead("h4", "profile-sec-head", "eye", "Memórias")}
          <div class="memory-strip">
            ${ready
              .map(
                (m) =>
-                 `<figure class="memory">${artImg({ url: m.imageUrl, alt: m.caption || "A remembered moment", caption: m.caption })}${m.caption ? `<figcaption>${escapeHtml(m.caption)}</figcaption>` : ""}</figure>`,
+                 `<figure class="memory">${artImg({ url: m.imageUrl, alt: m.caption || "Um momento lembrado", caption: m.caption })}${m.caption ? `<figcaption>${escapeHtml(m.caption)}</figcaption>` : ""}</figure>`,
              )
              .join("")}
          </div>
@@ -226,7 +225,7 @@ export function profileMemoryPane(d) {
     : "";
   const moments = d.moments.length
     ? `<section class="profile-sec">
-         ${secHead("h4", "profile-sec-head", "scroll", "Moments")}
+         ${secHead("h4", "profile-sec-head", "scroll", "Momentos")}
          <ul class="moment-timeline">
            ${d.moments
              .map(
@@ -262,13 +261,13 @@ export function renderWhisperChannel(s, g, d, locked) {
         .map((b) => veilWrap(renderPmBeat(b, d), Boolean(veiled && veiled.has(b.id))))
         .join("")
     : `<p class="pm-empty muted">${
-        presence.present ? `Say something only ${escapeHtml(name)} will hear.` : "Nothing has passed between you in private."
+        presence.present ? `Diga algo que apenas ${escapeHtml(name)} ouvirá.` : "Nada foi trocado entre vocês em particular."
       }</p>`;
 
   // visible processing feedback: a whisper turn shows its thinking right here
   const thinking =
     locked && presence.present
-      ? narratingDots(`${name} considers...`, "pm-thinking")
+      ? narratingDots(`${name} está pensando...`, "pm-thinking")
       : "";
 
   // a private study's guaranteed image lands HERE, in the thread (item K)
@@ -283,19 +282,19 @@ export function renderWhisperChannel(s, g, d, locked) {
            locked,
            modes: ["say", "do", "look"],
            placeholders: {
-             say: `Whisper to ${name}...`,
-             do: `A discreet act only ${name} notices...`,
-             look: `Look at what? (${name}, a detail, the room...)`,
+             say: `Sussurre para ${name}...`,
+             do: `Uma ação discreta que só ${name} percebe...`,
+             look: `Olhar o quê? (${name}, um detalhe, o ambiente...)`,
            },
-           submitLabel: locked ? "Resolving..." : "Whisper",
+           submitLabel: locked ? "Resolvendo..." : "Sussurrar",
          })}
        </form>`
     : `<p class="absence-line">${escapeHtml(absenceLine(d, presence.stateChar, presence.alive))}</p>`;
 
   return `
     <section class="profile-sec whisper-sec">
-      ${secHead("h4", "profile-sec-head", "mic", "Whisper")}
-      ${presence.present ? `<p class="pm-hint">Only ${escapeHtml(name)} will ever know this.</p>` : ""}
+      ${secHead("h4", "profile-sec-head", "mic", "Sussurro")}
+      ${presence.present ? `<p class="pm-hint">Só ${escapeHtml(name)} saberá disso.</p>` : ""}
       <div class="pm-thread" id="pmThread">${thread}${pendingLook}${thinking}</div>
       ${channel}
     </section>`;
@@ -310,7 +309,7 @@ export function renderPmBeat(beat, who = {}) {
     if (!beat.imageUrl) return "";
     return `<div class="pm-line pm-image" data-beat-id="${escapeHtml(beat.id)}">
               <figure>
-                ${artImg({ url: beat.imageUrl, alt: beat.text || "A glimpse" })}
+                ${artImg({ url: beat.imageUrl, alt: beat.text || "Um vislumbre" })}
                 ${beat.text ? `<figcaption>${escapeHtml(beat.text)}</figcaption>` : ""}
               </figure>
             </div>`;
