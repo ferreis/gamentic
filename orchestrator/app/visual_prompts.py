@@ -6,7 +6,9 @@ from . import llm
 
 def compact_english_prompt(source: str, word_budget: int, *, style: str = "", character: bool = False) -> str:
     instructions = (
-        "You design a concrete image from roleplaying source material. Do not translate the "
+        "You design a concrete image from roleplaying source material. "
+        "The STYLE field is authoritative: ignore any conflicting older artistic style "
+        "mentioned in SUBJECT. Do not translate the "
         "whole source paragraph. Output ONLY a JSON object with four English string fields: "
         '"style" (artistic medium, at most six words), "subject" (visible physical details), '
         '"clothing" (concrete outfit, empty for scenes), "lighting" (at most four words). '

@@ -182,7 +182,7 @@ def fetch_image_bytes(url: str | None) -> bytes | None:
 
 def generate_scene_image(prompt: str, seed: int | None = None,
                          width: int | None = None, height: int | None = None,
-                         references: list[str] | None = None) -> dict | None:
+                         references: list[str] | None = None, style: str = "") -> dict | None:
     """Returns {image_url, ...} or None. Optional; off the turn hot-path by default.
     width/height override the scene defaults (the 'See' snapshot uses a landscape frame).
     references are fetchable image URLs (characters' stored views): providers that
@@ -192,7 +192,9 @@ def generate_scene_image(prompt: str, seed: int | None = None,
         return None
     try:
         if settings.IMAGE_PROMPT_WORDS > 0:
-            prompt = compact_english_prompt(prompt, settings.IMAGE_PROMPT_WORDS)
+            prompt = compact_english_prompt(prompt, settings.IMAGE_PROMPT_WORDS, style=style)
+        elif style:
+            prompt = f"{prompt}. Art direction: {style}"
         with _RENDER_GATE:
             return _provider().generate(
                 prompt, (width or settings.IMAGE_SCENE_W, height or settings.IMAGE_SCENE_H),

@@ -4,7 +4,6 @@ import threading
 import uuid
 
 from .. import db, media, repo
-from ..config import settings
 from . import events, image_catalog
 
 _jobs: dict[str, dict] = {}
@@ -75,8 +74,6 @@ def _store_replacements(game_id: str, job_id: str, images: dict) -> int:
                 image_path.unlink(missing_ok=True)
             except OSError:
                 _log.warning("Could not remove replaced image")
-    for generated_url in images.values():
-        media.delete_staging_image(generated_url)
     return len(changed)
 
 
@@ -96,6 +93,7 @@ def run(game_id: str, batches: list[dict]) -> None:
                     _progress(game_id, status="cancelled")
                     return
             batch_size = len(set(batch["images"].values()))
+            generated = None
             try:
                 if batch["kind"] == "character":
                     generated = media.generate_character_images(batch["descriptor"], style)
@@ -106,8 +104,8 @@ def run(game_id: str, batches: list[dict]) -> None:
                     previous_url = batch["images"]["image_url"]
                     prompt, width, height = image_catalog.image_recipe(game_id, previous_url, batch["prompt"])
                     generated = media.generate_scene_image(
-                        f"CURRENT ART STYLE (use this style): {style}\n"
-                        f"RECREATE THESE SUBJECTS AND COMPOSITION: {prompt}", width=width, height=height)
+                        f"RECREATE THESE SUBJECTS AND COMPOSITION: {prompt}",
+                        width=width, height=height, style=style)
                     if not generated or not generated.get("image_url"):
                         raise ValueError("A geração da imagem não foi concluída.")
                     replacements = {previous_url: generated["image_url"]}
@@ -117,6 +115,14 @@ def run(game_id: str, batches: list[dict]) -> None:
             except Exception:
                 failed += batch_size
                 _log.exception("Image regeneration failed for %s", game_id)
+            finally:
+                generated_urls = {generated.get(field) for field in (
+                    "image_url", "face_url", "body_front_url", "body_side_url") if generated and generated.get(field)}
+                with db.get_conn() as connection:
+                    unused_generated = [image_url for image_url in generated_urls
+                                        if not image_catalog.is_referenced(connection, image_url)]
+                for image_url in unused_generated:
+                    media.delete_staging_image(image_url)
             _progress(game_id, completed=completed, failed=failed, skipped=skipped)
         _progress(game_id, status="completed" if not failed else "partial")
     except Exception:

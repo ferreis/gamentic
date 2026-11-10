@@ -31,6 +31,7 @@ def attach_scene_image(game_id, filename="scene.png"):
 
 
 def test_regenerates_all_owners_including_shared_items_and_old_private_beats(client, world, monkeypatch):
+    world["art_style"] = "Anime visual novel illustration"
     game_id = client.post("/games", json=world).json()["game_id"]
     original_scene_url, original_scene_path = attach_scene_image(game_id)
     item_url = f"/media/{game_id}/key.png"
@@ -49,7 +50,7 @@ def test_regenerates_all_owners_including_shared_items_and_old_private_beats(cli
     scene_requests = []
 
     def generate_scene(prompt, **options):
-        scene_requests.append(prompt)
+        scene_requests.append((prompt, options))
         return {"image_url": "/generated.png"}
 
     monkeypatch.setattr(media, "generate_scene_image", generate_scene)
@@ -61,6 +62,7 @@ def test_regenerates_all_owners_including_shared_items_and_old_private_beats(cli
     assert progress["status"] == "completed"
     assert progress["total"] == progress["completed"] == 6
     assert len(scene_requests) == 3  # scene, one shared item image, private memory
+    assert all(options["style"] == world["art_style"] for prompt, options in scene_requests)
     with db.get_conn() as connection:
         assert dict(repo.get_game(connection, game_id)) == previous_game
         assert repo.current_scene(connection, game_id)["image_url"] != original_scene_url
@@ -128,3 +130,25 @@ def test_references_in_other_adventures_are_not_changed_or_deleted(client, world
     with db.get_conn() as connection:
         assert repo.current_scene(connection, second_game)["image_url"] == previous_url
     assert previous_path.exists()
+
+
+def test_item_moved_during_generation_keeps_its_new_owner_and_quantity(client, world, monkeypatch):
+    game_id = client.post("/games", json=world).json()["game_id"]
+    inventory = [{"id": "key", "name": "Key", "qty": 3, "image_url": f"/media/{game_id}/key.png"}]
+    with db.get_conn() as connection:
+        character_id = repo.get_characters(connection, game_id)[0]["id"]
+        connection.execute("UPDATE player_state SET inventory=? WHERE game_id=?", (json.dumps(inventory), game_id))
+
+    def move_during_generation(*arguments, **options):
+        with db.get_conn() as connection:
+            connection.execute("UPDATE player_state SET inventory='[]' WHERE game_id=?", (game_id,))
+            connection.execute("UPDATE characters SET inventory=? WHERE id=?", (json.dumps(inventory), character_id))
+        return {"image_url": "/new-key.png"}
+
+    monkeypatch.setattr(media, "generate_scene_image", move_during_generation)
+    assert client.post(f"/games/{game_id}/images/regenerate").status_code == 202
+    with db.get_conn() as connection:
+        assert json.loads(repo.get_player(connection, game_id)["inventory"]) == []
+        moved = json.loads(repo.get_character(connection, character_id)["inventory"])[0]
+        assert moved["qty"] == 3
+        assert moved["image_url"] != inventory[0]["image_url"]

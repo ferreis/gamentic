@@ -626,7 +626,7 @@ test("settings: autoplay is split and a live game adds difficulty/voice/export",
 
 test("regeneration shows progress and blocks duplicate starts while keeping its scope clear", () => {
   const rendered = parse(renderApp({ view: "settings", settings: {}, active: {
-    id: "g1", state: SCENE_STATE, beats: [],
+    id: "g1", state: { ...SCENE_STATE, imagesEnabled: true }, beats: [],
     imageRegeneration: { status: "running", total: 19, completed: 6, failed: 1 },
   } }));
   assert.ok(rendered.querySelector('[data-act="regenerate-all-images"]').disabled);

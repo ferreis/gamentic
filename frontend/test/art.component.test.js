@@ -22,6 +22,7 @@ test("settings starts a regeneration and SSE refreshes images already present in
     }),
     http.get("http://localhost:8000/games/:id/state", () => {
       const gameState = makeState();
+      gameState.images_enabled = true;
       gameState.scene.image_url = regenerated ? "/new-scene.png" : "/old-scene.png";
       return HttpResponse.json(gameState);
     }),
@@ -33,7 +34,7 @@ test("settings starts a regeneration and SSE refreshes images already present in
   await player.click(await screen.findByRole("button", { name: /entre nos mundos salvos/i }));
   await player.click(await screen.findByRole("button", { name: /^entrar$/i }));
   await screen.findAllByText("The Last Breath");
-  await player.click(screen.getByRole("button", { name: /configurações/i }));
+  await player.click(screen.getByRole("button", { name: /^menu$/i }));
   await player.click(await screen.findByRole("button", { name: /regenerar todas as imagens/i }));
   await screen.findByText("0 de 2 imagens processadas.");
   expect(screen.getByRole("button", { name: /regenerando imagens/i }).disabled).toBe(true);
