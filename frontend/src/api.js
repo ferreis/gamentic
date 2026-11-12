@@ -99,6 +99,8 @@ export function createApi(backendUrl) {
     regenerateImages: (id) =>
       request(`/games/${encodeURIComponent(id)}/images/regenerate`, { method: "POST", body: {} }),
     imageRegenerationStatus: (id) => request(`/games/${encodeURIComponent(id)}/images/regeneration`),
+    artSettings: () => request("/images/settings"),
+    saveArtSettings: (payload) => request("/images/settings", { method: "PUT", body: payload }),
     // The full-screen character view (traits, moments, memories). Cheap; refetch
     // when opening and after each turn while open.
     characterProfile: (id, cid) =>

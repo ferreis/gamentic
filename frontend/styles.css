@@ -631,6 +631,10 @@ button { font: inherit; cursor: pointer; }
 .set-row:last-child { border-bottom: none; }
 .set-label { display: flex; flex-direction: column; gap: 0.15rem; color: var(--ink); font-size: 0.95rem; }
 .set-label small { color: var(--ink-muted); font-size: 0.74rem; }
+.art-model-settings { display: grid; gap: 0.75rem; margin-bottom: 1.25rem; }
+.art-model-settings select { width: 100%; min-width: 0; }
+.art-model-settings .set-row { flex-wrap: wrap; cursor: default; }
+.art-model-settings input[type="number"] { width: 5rem; max-width: 100%; }
 
 /* sci-fi toggle */
 .holo-switch { position: relative; display: inline-block; width: 54px; height: 26px; flex: 0 0 auto; }

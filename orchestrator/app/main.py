@@ -22,6 +22,7 @@ from .integrate import regeneration
 from .config import settings
 from .providers import resolve, voice_enabled
 from .providers import audio as audio_providers
+from .art_settings import router as art_settings_router
 from .models import (WorldSheet, ActionIn, ContinueIn, CreateMessageIn, GameState,
                      GameSettingsIn, SpeakIn, TurnOut, ViewIn, ExplainIn)
 
@@ -36,6 +37,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Gamentic Orchestrator", version="0.1", lifespan=lifespan)
+app.include_router(art_settings_router)
 
 
 # An unhandled exception escapes PAST the CORS middleware to Starlette's own

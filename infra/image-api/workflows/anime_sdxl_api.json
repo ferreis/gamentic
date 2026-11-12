@@ -59,14 +59,14 @@
     },
     "inputs": {
       "model": [
-        "2",
+        "1",
         0
       ],
       "seed": 42,
-      "steps": 4,
-      "cfg": 1.0,
-      "sampler_name": "euler",
-      "scheduler": "sgm_uniform",
+      "steps": 28,
+      "cfg": 5.0,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
       "positive": [
         "4",
         0
@@ -103,17 +103,6 @@
         0
       ],
       "filename_prefix": "gamentic"
-    }
-  },
-  "2": {
-    "class_type": "LoraLoaderModelOnly",
-    "inputs": {
-      "model": [
-        "1",
-        0
-      ],
-      "lora_name": "sdxl_lightning_4step_lora.safetensors",
-      "strength_model": 1.0
     }
   }
 }

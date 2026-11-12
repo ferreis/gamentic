@@ -15,6 +15,7 @@ _PROD_WORKFLOW = (
 
 os.environ.setdefault("WORKFLOW_TEMPLATE", str(_PROD_WORKFLOW))
 os.environ.setdefault("COMFY_URL", "http://comfy.test:8188")
+os.environ.setdefault("IMAGE_SETTINGS_PATH", str(Path(tempfile.mkdtemp(prefix="image-api-art-settings-")) / "art.json"))
 
 # The DELETE endpoints unlink files in the staging (ComfyUI output) dir, so tests get a
 # throwaway one - the default /comfy/output only exists inside the container.

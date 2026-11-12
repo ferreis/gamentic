@@ -1,6 +1,7 @@
 // The non-play screens: menu, library (delete/export/import), creator, settings.
 
 import { icon } from "../icons.js";
+import { renderArtSettings } from "./artsettings.js";
 import { cardCorners, escapeHtml, help, holoFrame, holoFx } from "./common.js";
 import { contextMeter, hudStat, iconBtn, modalShell, narratingDots, secHead } from "./widgets.js";
 
@@ -433,6 +434,7 @@ function renderArtRegeneration(game) {
     : progress.status === "failed" ? "A geração foi interrompida. Você pode tentar novamente." : "";
   return `<fieldset class="set-group art-regeneration">
     <legend>Arte da aventura</legend>
+    ${renderArtSettings(game)}
     <p class="set-note">Refaz as imagens já geradas com o modelo e o estilo atuais. História e progresso são preservados.</p>
     <button type="button" class="holo-btn" data-act="regenerate-all-images" ${disabled ? "disabled" : ""}>
       ${icon("image")}<span>${running ? "Regenerando imagens..." : "Regenerar todas as imagens"}</span>

@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Baixa modelos ausentes e inicia os serviços configurados no .env.
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+if [[ "${1:-}" == "--help" ]]; then
+    echo "Uso: ./start [--models-only]"
+    echo "Instala checkpoints/LoRAs e inicia o Docker Compose conforme o .env."
+    echo "--models-only: instala os modelos sem iniciar ou reiniciar serviços."
+    exit 0
+fi
+if [[ $# -gt 1 || ($# -eq 1 && "$1" != "--models-only") ]]; then
+    echo "Opção inválida. Use ./start --help." >&2
+    exit 1
+fi
+configuration_file="${ENV_FILE:-.env}"
+[[ -f "$configuration_file" ]] || { echo "Crie o .env com ./gamentic-setup ou copie .env.example e configure os serviços." >&2; exit 1; }
+for required_command in python3 curl docker; do
+    command -v "$required_command" >/dev/null || { echo "Comando necessário: $required_command" >&2; exit 1; }
+done
+workflow_template="$(docker compose --env-file "$configuration_file" config --format json | python3 -c '
+import json, sys
+configuration = json.load(sys.stdin)
+print(configuration.get("services", {}).get("image-api", {}).get("environment", {}).get("WORKFLOW_TEMPLATE", ""))
+')"
+python3 infra/models/download.py --env-file "$configuration_file" --workflow "$workflow_template"
+if [[ "${1:-}" == "--models-only" ]]; then
+    exit 0
+fi
+docker compose --env-file "$configuration_file" up -d --build
+docker compose --env-file "$configuration_file" ps

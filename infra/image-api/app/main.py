@@ -27,12 +27,13 @@ from typing import Literal
 from fastapi import FastAPI, HTTPException, Query, Response
 from pydantic import BaseModel, Field
 
-from . import config, workflow
+from . import config, workflow, art_settings
 from .comfy_client import ComfyClient, ComfyError, ImageRef
 
 log = logging.getLogger("image-api")
 
 app = FastAPI(title="gamentic image-api", version="1.0.0")
+app.include_router(art_settings.router)
 
 _comfy = ComfyClient(config.COMFY_URL, timeout=config.GENERATE_TIMEOUT)
 
@@ -45,6 +46,7 @@ try:
     _template = workflow.apply_lora(
         workflow.apply_models(
             workflow.load_template(config.WORKFLOW_TEMPLATE),
+            checkpoint_name=config.CHECKPOINT_NAME,
             unet_name=config.UNET_NAME,
             clip_name=config.CLIP_NAME,
             clip_type=config.CLIP_TYPE,
@@ -53,6 +55,7 @@ try:
         lora_name=config.LORA_NAME,
         strength=config.LORA_STRENGTH,
     )
+    _template = workflow.apply_loras(_template, config.LORAS)
 except FileNotFoundError:
     _template = None
     _template_error = f"workflow template not found at {config.WORKFLOW_TEMPLATE}"
@@ -211,10 +214,19 @@ async def _render(
         )
     if config.PROMPT_SUFFIX:
         prompt = f"{prompt}, {config.PROMPT_SUFFIX}"
+    render_template, steps, prompt = art_settings.render_settings(_template, steps, prompt)
+    width, height = art_settings.image_dimensions(width, height)
+    if not negative_prompt:
+        for node in render_template.values():
+            if node.get("_meta", {}).get("title") == workflow.TITLE_NEGATIVE:
+                negative_prompt = node["inputs"].get("text", "")
+                break
+    if any(node.get("class_type") == "CheckpointLoaderSimple" for node in render_template.values()):
+        reference_filenames = []  # These checkpoint workflows do not implement reference conditioning.
     try:
         if reference_filenames:
             graph = workflow.build_reference_graph(
-                _template,
+                render_template,
                 prompt=prompt,
                 negative_prompt=negative_prompt,
                 width=width,
@@ -225,7 +237,7 @@ async def _render(
             )
         else:
             graph = workflow.build_graph(
-                _template,
+                render_template,
                 prompt=prompt,
                 negative_prompt=negative_prompt,
                 width=width,
@@ -258,6 +270,7 @@ async def health() -> dict:
 async def generate(req: GenerateRequest) -> GenerateResponse:
     width = _clamp_dim(req.width or config.DEFAULT_WIDTH)
     height = _clamp_dim(req.height or config.DEFAULT_HEIGHT)
+    width, height = art_settings.image_dimensions(width, height)
     seed = req.seed if req.seed is not None else random.randint(0, 2**32 - 1)
     steps = req.steps or config.DEFAULT_STEPS
 

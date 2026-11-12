@@ -29,6 +29,7 @@ WORKFLOW_TEMPLATE: Path = Path(
 # is a config change (edit .env, re-run infra/comfyui/fetch-models.sh, restart), never a
 # template edit and never an image rebuild. Empty = keep whatever the template names.
 UNET_NAME: str = os.environ.get("COMFY_UNET_NAME", "").strip()
+CHECKPOINT_NAME: str = os.environ.get("COMFY_CHECKPOINT_NAME", "").strip()
 CLIP_NAME: str = os.environ.get("COMFY_CLIP_NAME", "").strip()
 CLIP_TYPE: str = os.environ.get("COMFY_CLIP_TYPE", "").strip()
 VAE_NAME: str = os.environ.get("COMFY_VAE_NAME", "").strip()
@@ -36,6 +37,7 @@ VAE_NAME: str = os.environ.get("COMFY_VAE_NAME", "").strip()
 # Optional LoRA, spliced in front of the diffusion model at boot. Empty = no LoRA node at
 # all. The file lives in COMFY_MODELS_DIR/loras; strength is the usual 0.0-1.0+ scale.
 LORA_NAME: str = os.environ.get("COMFY_LORA_NAME", "").strip()
+LORAS: str = os.environ.get("COMFY_LORAS", "").strip()
 LORA_STRENGTH: float = float(os.environ.get("COMFY_LORA_STRENGTH", "1.0") or "1.0")
 
 # Generation defaults. Small + few-step keeps a single image under ~60s on Strix Halo.

@@ -70,6 +70,31 @@ Recommended for that reason: an uncensored ("heretic") 26B-A4B MoE finetune (`mr
 
 ## Run it
 
+### Início com instalação automática dos modelos
+
+Configure o `.env` e execute:
+
+```sh
+./start
+```
+
+O script instala os seis checkpoints e LoRAs do catálogo em `infra/models/manifest.json`,
+verifica tamanho e SHA-256 e inicia os serviços definidos no `.env`.
+Respeita `COMFY_MODELS_DIR`, `COMPOSE_FILE` e `COMPOSE_PROFILES`.
+No workflow FLUX, também executa o instalador já existente para o modelo, encoder e VAE.
+Modelos de texto e voz seguem a configuração dos respectivos provedores e serviços.
+
+```sh
+./start --models-only   # instala os modelos sem iniciar ou reiniciar serviços
+```
+
+Requer Python 3.11+, curl e Docker Compose. Downloads interrompidos continuam pelo
+arquivo `.part`; um arquivo só recebe o nome definitivo depois da validação.
+Modelos já instalados e válidos são reaproveitados. O primeiro download dos seis
+arquivos de imagem ocupa aproximadamente 15 GB; o conjunto FLUX usa espaço adicional.
+Os pesos, caches, imagens geradas e `.env` ficam fora do Git. O repositório contém
+apenas os links fixos, hashes e scripts de instalação; Git LFS não é necessário.
+
 Requires Docker (with GPU access for the model and the image service) and local model files on disk. Configure first, three ways to taste, then start the stack:
 
 ```bash

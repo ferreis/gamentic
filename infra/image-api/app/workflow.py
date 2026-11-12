@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 from pathlib import Path
 
 TITLE_POSITIVE = "Positive Prompt"
@@ -38,6 +39,7 @@ CLASS_LORA = "LoraLoaderModelOnly"
 # Loader class -> the input field naming the file it loads. Model choice lives in config
 # (from .env), not in the template, so a different model set is an .env edit + restart.
 MODEL_FIELDS = {
+    "checkpoint_name": ("CheckpointLoaderSimple", "ckpt_name"),
     "unet_name": ("UNETLoader", "unet_name"),
     "clip_name": ("CLIPLoader", "clip_name"),
     "clip_type": ("CLIPLoader", "type"),
@@ -56,6 +58,7 @@ def load_template(path: str | Path) -> dict:
 def apply_models(
     template: dict,
     *,
+    checkpoint_name: str = "",
     unet_name: str = "",
     clip_name: str = "",
     clip_type: str = "",
@@ -70,6 +73,7 @@ def apply_models(
     """
     graph = copy.deepcopy(template)
     for arg, value in (
+        ("checkpoint_name", checkpoint_name),
         ("unet_name", unet_name),
         ("clip_name", clip_name),
         ("clip_type", clip_type),
@@ -92,6 +96,8 @@ def apply_models(
 def apply_lora(template: dict, *, lora_name: str = "", strength: float = 1.0) -> dict:
     """Return a copy of the template with a LoRA spliced in front of the diffusion model.
 
+    Checkpoint workflows also route CLIP through the adapter so text-encoder weights apply.
+
     No name = the template comes back untouched, which is why the LoRA is inserted here
     rather than shipped in the template: an empty lora_name is not a valid ComfyUI widget
     value, so a permanently wired LoRA node would break every render that does not want one.
@@ -105,24 +111,56 @@ def apply_lora(template: dict, *, lora_name: str = "", strength: float = 1.0) ->
         return graph
 
     model_id = _find_id(graph, class_type=CLASS_UNETLOADER)
+    checkpoint_id = _find_id(graph, class_type="CheckpointLoaderSimple")
+    model_id = model_id or checkpoint_id
     if model_id is None:
         raise WorkflowError(
-            f"template has no {CLASS_UNETLOADER} node to hang the LoRA {lora_name!r} off; "
-            "clear COMFY_LORA_NAME or use a template whose model comes from a UNETLoader"
+            f"template has no UNETLoader or CheckpointLoaderSimple for LoRA {lora_name!r}"
         )
 
     lora_id = "lora_0"
+    while lora_id in graph:
+        lora_id += "_next"
     graph[lora_id] = {
-        "class_type": CLASS_LORA,
+        "class_type": "LoraLoader" if checkpoint_id == model_id else CLASS_LORA,
         "_meta": {"title": "LoRA"},
         "inputs": {"model": [model_id, 0], "lora_name": lora_name, "strength_model": strength},
     }
+    if checkpoint_id == model_id:
+        graph[lora_id]["inputs"].update(clip=[model_id, 1], strength_clip=strength)
     for node_id, node in graph.items():
         if node_id == lora_id:
             continue
         for field, value in node.get("inputs", {}).items():
             if field == "model" and value == [model_id, 0]:
                 node["inputs"][field] = [lora_id, 0]
+            elif field == "clip" and checkpoint_id == model_id and value == [model_id, 1]:
+                node["inputs"][field] = [lora_id, 1]
+    return graph
+
+
+def apply_loras(template: dict, specifications: str = "") -> dict:
+    """Apply an ordered JSON list of LoRAs; each strength controls model and CLIP."""
+    if not specifications.strip():
+        return template
+    try:
+        loras = json.loads(specifications)
+    except json.JSONDecodeError as error:
+        raise WorkflowError("COMFY_LORAS must be a JSON list") from error
+    if not isinstance(loras, list):
+        raise WorkflowError("COMFY_LORAS must be a JSON list")
+    graph = template
+    # Insertion happens next to the base loader, so insert in reverse to preserve order.
+    for specification in reversed(loras):
+        if not isinstance(specification, dict):
+            raise WorkflowError("Each LoRA needs a name and an optional strength")
+        lora_name = specification.get("name")
+        strength = specification.get("strength", 1.0)
+        if not isinstance(lora_name, str) or not lora_name.strip():
+            raise WorkflowError("Each LoRA needs a nonempty name")
+        if isinstance(strength, bool) or not isinstance(strength, (int, float)) or not math.isfinite(strength) or not -2 <= strength <= 2:
+            raise WorkflowError("LoRA strength must be a finite number between -2 and 2")
+        graph = apply_lora(graph, lora_name=lora_name.strip(), strength=strength)
     return graph
 
 

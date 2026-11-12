@@ -1,4 +1,4 @@
-# Gamentic - publish the GAME CODE only. Everything design/process/secret stays local.
+# Gamentic - publish code; models, runtime data and secrets stay local.
 
 # --- secrets & environment ---
 .env
@@ -44,7 +44,7 @@ docs/*
 **/SPECS.md
 
 # --- runtime data, generated media, databases ---
-# weights live wherever MODELS_DIR / COMFY_MODELS_DIR point; ./models is the default
+# Model weights are installed by ./start and are never committed.
 /models/
 **/data/
 voice-api/samples/
@@ -70,3 +70,4 @@ frontend/examples/
 # --- os cruft ---
 .DS_Store
 Thumbs.db
+infra/image-api/settings/

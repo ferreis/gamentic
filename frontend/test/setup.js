@@ -10,6 +10,7 @@ import { GAMES, makeState, makeBeat, makeProfile } from "./fixtures.js";
 const API = "http://localhost:8000";
 
 export const defaultHandlers = [
+  http.get(`${API}/images/settings`, () => HttpResponse.json({ settings: { checkpoint: "", loras: [] }, checkpoints: [], loras: [] })),
   http.get(`${API}/health`, () => HttpResponse.json({ status: "ok" })),
   http.get(`${API}/games`, () => HttpResponse.json({ games: GAMES })),
   http.get(`${API}/games/:id/state`, () => HttpResponse.json(makeState())),

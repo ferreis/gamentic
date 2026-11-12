@@ -15,6 +15,7 @@ import { closeTagger, doExplain, doGive, onCharAction, openInspect, openTagger, 
 import { cycleProfileImage, openProfile, switchProfileTab } from "./profilectl.js";
 import { applyMemorySetting, patchGameSettings, updateSetting } from "./settingsctl.js";
 import { loadImageRegeneration, regenerateAllImages } from "./artctl.js";
+import { loadArtSettings, changeArtSetting, saveArtSettings } from "./artsettingsctl.js";
 import { applySpeakStates, speakBeat } from "./speech.js";
 import { continueStory, stopTurn, takeTurn } from "./turns.js";
 
@@ -214,6 +215,7 @@ function onRootKeydown(e) {
 function onRootChange(e) {
   const t = e.target;
   if (!t || !t.matches) return;
+  if (t.matches("[data-art-setting]")) return changeArtSetting(t);
   if (t.matches("[data-setting]")) {
     if (t.type !== "range") updateSetting(t); // ranges live-update on input
     return;
@@ -285,6 +287,10 @@ export function onAction(act, el) {
       state.view = "settings";
       render();
       loadImageRegeneration();
+      loadArtSettings();
+      break;
+    case "save-art-settings":
+      saveArtSettings();
       break;
     case "regenerate-all-images":
       regenerateAllImages();

@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "models": [
+    {
+      "path": "checkpoints/LCM_AAM_AnyLoRA_AnimeMix.safetensors",
+      "size": 2133804992,
+      "sha256": "997ea7c1d2341431f3fbe7dd31f3edb9dd3a5ebe90f13ebeaa39734a11ce60e9",
+      "url": "https://huggingface.co/Lykon/AAM_AnyLora_AnimeMix-LCM/resolve/6178fab5d0bfc291bf677cdbc336970f59d92132/LCM_AAM_AnyLoRA_AnimeMix.safetensors"
+    },
+    {
+      "path": "checkpoints/animagine-xl-4.0-opt.safetensors",
+      "size": 6938350040,
+      "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+      "url": "https://huggingface.co/cagliostrolab/animagine-xl-4.0/resolve/2b7c1b397761bf5bd3cc42e5b39ec99314a75a96/animagine-xl-4.0-opt.safetensors"
+    },
+    {
+      "path": "checkpoints/sd_turbo.safetensors",
+      "size": 5214561328,
+      "sha256": "3f067a1b943cf162f2b8f8588f6cf5824bd5b4c7d1d88d87164b9ca123616549",
+      "url": "https://huggingface.co/stabilityai/sd-turbo/resolve/b261bac6fd2cf515557d5d0707481eafa0485ec2/sd_turbo.safetensors"
+    },
+    {
+      "path": "loras/papercut.safetensors",
+      "size": 340786114,
+      "sha256": "98f1729d858e7bf719283797e45661337ce915941b83260026e157d94963c402",
+      "url": "https://huggingface.co/TheLastBen/Papercut_SDXL/resolve/b001f28d3913bc1e4a19f2564fa41e39049bec1c/papercut.safetensors"
+    },
+    {
+      "path": "loras/pixel-art-xl.safetensors",
+      "size": 170543052,
+      "sha256": "4234637cb80c998f41e348e6a6cb6bc20d8d038b2b0f256b6129b3b5e353eef7",
+      "url": "https://huggingface.co/nerijs/pixel-art-xl/resolve/8bf4a4d9ea283e00a51fafda8e0539f8248ea037/pixel-art-xl.safetensors"
+    },
+    {
+      "path": "loras/sdxl_lightning_4step_lora.safetensors",
+      "size": 393854592,
+      "sha256": "bf56cf2657efb15e465d81402ed481d1e11c4677e4bcce1bc11fe71ad8506b79",
+      "url": "https://huggingface.co/ByteDance/SDXL-Lightning/resolve/c9a24f48e1c025556787b0c58dd67a091ece2e44/sdxl_lightning_4step_lora.safetensors"
+    }
+  ]
+}
