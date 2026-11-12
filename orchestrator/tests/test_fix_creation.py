@@ -159,7 +159,7 @@ def test_a_bare_tool_call_still_returns_a_reply(client, fake_llm):
     r = client.post("/create/message", json={"session_id": "t3", "message": "go"}).json()
     assert r["ready"] is True
     assert r["reply"].startswith("The lighthouse world.")
-    assert "we begin" in r["reply"]
+    assert "salvar o cenário" in r["reply"]
 
 
 def test_an_unrelated_tool_call_does_not_unlock(client, fake_llm):

@@ -86,6 +86,34 @@ class PlayerItemIn(BaseModel):
     description: str = ""
 
 
+class ScenarioSheet(BaseModel):
+    """Reusable initial world rules. No protagonist, quest progress or game state."""
+    title: str = Field(..., min_length=1, max_length=160)
+    setting: str = Field(..., min_length=1, max_length=12000)
+    rules: str = Field(..., min_length=1, max_length=12000)
+    tone: str = Field("", max_length=1000)
+    art_style: str = Field("", max_length=1000)
+    narrator_persona: str = Field("", max_length=2000)
+
+    @field_validator("title", "setting", "rules")
+    @classmethod
+    def _nonblank(cls, text: str) -> str:
+        if not text.strip():
+            raise ValueError("O campo não pode ficar vazio.")
+        return text.strip()
+
+
+class ScenarioStartIn(BaseModel):
+    premise: str = Field(..., min_length=1, max_length=MAX_ACTION_CHARS)
+
+    @field_validator("premise")
+    @classmethod
+    def _nonblank(cls, text: str) -> str:
+        if not text.strip():
+            raise ValueError("Descreva seu personagem e a situação inicial.")
+        return text.strip()
+
+
 class WorldSheet(BaseModel):
     """The story-creator's output and the create-game payload."""
     title: str

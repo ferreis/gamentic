@@ -156,10 +156,20 @@ CREATE TABLE IF NOT EXISTS scenes (
     created_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS scenarios (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    sheet TEXT NOT NULL,
+    source_session_id TEXT UNIQUE,
+    created_at TEXT DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS creator_sessions (
     id TEXT PRIMARY KEY,              -- client-chosen session id
     history TEXT DEFAULT '[]',        -- the interview chat (JSON list of {role, content})
-    updated_at TEXT
+    updated_at TEXT,
+    summary TEXT DEFAULT '',
+    summarized_through INTEGER DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_scenes_game ON scenes(game_id, name);
@@ -237,6 +247,10 @@ _MIGRATIONS = {
         "left_at_minutes": "INTEGER",
         "draft": "TEXT DEFAULT ''",
         "background": "TEXT DEFAULT ''",
+    },
+    "creator_sessions": {
+        "summary": "TEXT DEFAULT ''",
+        "summarized_through": "INTEGER DEFAULT 0",
     },
 }
 

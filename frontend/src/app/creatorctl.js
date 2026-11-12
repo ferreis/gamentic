@@ -1,7 +1,8 @@
-// The story creator: persisted chat sessions, restore-on-entry, finalize.
+// Scenario creation: persisted interviews, restore-on-entry and reusable world rules.
 
 import { api, rand, root, state } from "./ctx.js";
-import { openGame } from "./game.js";
+import { refreshLibrary } from "./game.js";
+import { showToast } from "./cues.js";
 import { render } from "./ui.js";
 
 // ---------------------------------------------------------------------------
@@ -83,7 +84,7 @@ export function resetCreator() {
     messages: [
       {
         role: "builder",
-        text: "Conte sobre o mundo em que você quer jogar. Um lugar, um clima, um perigo, um companheiro. Eu vou transformá-lo em uma aventura de verdade.",
+        text: "Vamos definir o cenário: o mundo, suas regras, seus poderes e seus limites. Depois de salvar, você poderá iniciar várias aventuras independentes nele.",
       },
     ],
   };
@@ -115,7 +116,7 @@ export async function sendCreatorMessage(raw) {
   }
 }
 
-export async function beginAdventure() {
+export async function saveScenario() {
   const c = state.creator;
   if (c.busy || !c.ready) return;
   c.busy = true;
@@ -123,18 +124,21 @@ export async function beginAdventure() {
   c.error = "";
   render();
   try {
-    const res = await api.creatorFinalize(c.sessionId);
+    await api.creatorSaveScenario(c.sessionId);
     c.busy = false;
-    clearCreatorSession(); // the chat became a real game; next New starts fresh
-    // leave finalizing on until openGame swaps the view, so the animation never flickers off first
-    openGame(res.game_id);
+    clearCreatorSession(); // the scenario is saved; the next creation starts a fresh interview
+    c.finalizing = false;
+    state.view = "library";
+    render();
+    showToast("Cenário salvo. Escolha um cenário para iniciar uma aventura.");
+    await refreshLibrary();
   } catch (err) {
     c.busy = false;
     c.finalizing = false;
     if (err.status === 409) {
-      c.messages.push({ role: "builder", text: err.message || "Preciso de mais alguns detalhes antes de começarmos. Continue." });
+      c.messages.push({ role: "builder", text: err.message || "Preciso de mais alguns detalhes antes de salvar o cenário. Continue." });
     } else {
-      c.error = "Não foi possível iniciar o jogo: " + (err.message || "offline");
+      c.error = "Não foi possível salvar o cenário: " + (err.message || "offline");
       state.backendOnline = false;
     }
     render();

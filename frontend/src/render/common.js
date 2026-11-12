@@ -10,9 +10,9 @@ export const HELP = {
   inventory: "O que você está carregando. Espaços vazios mostram quanto ainda cabe. Use Dar para entregar algo a um personagem.",
   story: "A história. Texto corrido é a narração; cartões coloridos com nome são personagens falando com você. Pequenos indicadores mostram acontecimentos como dano, itens e pontos.",
   action: "Escreva o que você faz ou diz e pressione Enter. O jogo entende falas, ações, ataques, presentes e sussurros. Olhar examina a cena ou algo de perto. Continuar avança a história, e o desejo é uma esperança para o narrador, não uma ação.",
-  creator: "Descreva o mundo que você quer em linguagem comum e converse com o criador de mundos. Quando houver detalhes suficientes, inicie a aventura.",
+  creator: "Descreva o mundo que você quer em linguagem comum e converse com o criador de mundos. Defina as regras e salve o cenário. Na biblioteca, use-o para iniciar quantas aventuras quiser.",
   settings: "Opções de som e, durante o jogo, regras da aventura: dificuldade, voz do narrador e exportação para compartilhar ou salvar. O servidor se conecta automaticamente.",
-  library: "Suas aventuras salvas. Continue uma delas ou comece um mundo novo. Elas ficam armazenadas no servidor.",
+  library: "Seus cenários e aventuras. Um cenário guarda as regras do mundo; cada aventura tem seu próprio progresso. Elas ficam armazenadas no servidor.",
 };
 
 export function help(key) {

@@ -262,6 +262,7 @@ services:
     environment:
       - LLM_BASE_URL=http://gamentic-llm-text:8080/v1
       - LLM_MODEL=${LLM_ALIAS:-gemma-4-26b-a4b-heretic}
+      - LLM_CONTEXT_SIZE=${LLM_CONTEXT_SIZE:-131072}
       # media kill-switches
       - IMAGE_ENABLED=${IMAGE_ENABLED:-true}
       - VOICE_ENABLED=${VOICE_ENABLED:-true}

@@ -44,7 +44,7 @@ test("an expired/unknown stored session starts clean and clears the stored id", 
   localStorage.setItem(SESSION_KEY, "creator-gone");
   await u.click(screen.getByRole("button", { name: /crie um mundo/i }));
 
-  expect(await screen.findByText(/conte sobre o mundo em que você quer jogar/i)).toBeTruthy();
+  expect(await screen.findByText(/vamos definir o cenário/i)).toBeTruthy();
   expect(screen.queryByText(/retomamos de onde você parou/i)).toBeNull();
   await waitFor(() => expect(localStorage.getItem(SESSION_KEY)).toBeNull());
 });
@@ -88,7 +88,7 @@ test("the begin button stays locked until the world-builder signals ready, then 
   await mountApp();
   await u.click(screen.getByRole("button", { name: /crie um mundo/i }));
   // locked from the first breath: a fresh chat has no world yet
-  const begin = () => screen.getByRole("button", { name: /iniciar/i });
+  const begin = () => screen.getByRole("button", { name: /salvar cenário/i });
   expect(begin().disabled).toBe(true);
   const box = screen.getByPlaceholderText(/descreva seu mundo/i);
   await u.type(box, "A haunted lighthouse");
@@ -99,7 +99,7 @@ test("the begin button stays locked until the world-builder signals ready, then 
   await u.click(screen.getByRole("button", { name: /^enviar$/i }));
   await screen.findByText(/your world is complete/i);
   expect(begin().disabled).toBe(false);                      // the ready reply unlocks it
-  expect(begin().textContent).toMatch(/iniciar a aventura/i);
+  expect(begin().textContent).toMatch(/salvar cenário/i);
 });
 
 test("a restored session that was already ready keeps the begin button unlocked", async () => {
@@ -120,5 +120,5 @@ test("a restored session that was already ready keeps the begin button unlocked"
   localStorage.setItem(SESSION_KEY, "creator-abc");
   await u.click(screen.getByRole("button", { name: /crie um mundo/i }));
   await screen.findByText(/retomamos de onde você parou/i);
-  expect(screen.getByRole("button", { name: /iniciar a aventura/i }).disabled).toBe(false);
+  expect(screen.getByRole("button", { name: /salvar cenário/i }).disabled).toBe(false);
 });

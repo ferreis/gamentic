@@ -72,6 +72,14 @@ export function createApi(backendUrl) {
     base,
     health: () => request("/health"),
     listGames: () => request("/games"),
+    listScenarios: () => request("/scenarios"),
+    getScenario: (scenarioId) => request(`/scenarios/${encodeURIComponent(scenarioId)}`),
+    startScenario: (scenarioId, premise) => request(`/scenarios/${encodeURIComponent(scenarioId)}/start`, {
+      method: "POST", body: { premise }, timeout: LLM_TIMEOUT_MS,
+    }),
+    creatorSaveScenario: (sessionId) => request("/create/scenario", {
+      method: "POST", body: { session_id: sessionId }, timeout: LLM_TIMEOUT_MS,
+    }),
     createGame: (worldSheet) => request("/games", { method: "POST", body: worldSheet }),
     getState: (id) => request(`/games/${encodeURIComponent(id)}/state`),
     getBeats: (id, since = null) =>

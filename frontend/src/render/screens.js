@@ -1,6 +1,7 @@
 // The non-play screens: menu, library (delete/export/import), creator, settings.
 
 import { icon } from "../icons.js";
+import { renderScenarioLibrary, renderScenarioStart } from "./scenarios.js";
 import { renderArtSettings } from "./artsettings.js";
 import { cardCorners, escapeHtml, help, holoFrame, holoFx } from "./common.js";
 import { contextMeter, hudStat, iconBtn, modalShell, narratingDots, secHead } from "./widgets.js";
@@ -70,21 +71,11 @@ export function renderLibrary(state) {
         <button class="holo-btn" data-act="retry-library">${icon("rotate")}<span>Tentar novamente</span></button>
       </div>`;
   } else if (!games.length) {
-    body = `
-      <div class="empty-state">
-        <div class="empty-icon">${icon("sparkles")}</div>
-        <h2>Ainda não há aventuras</h2>
-        <p>Crie seu primeiro mundo para começar.</p>
-        <button class="holo-btn primary" data-act="new-game">${icon("plus")}<span>Nova aventura</span></button>
-      </div>`;
+    body = `<p class="modal-body">Ainda não há aventuras. Escolha um cenário acima para começar.</p>`;
   } else {
     body = `<div class="holo-grid">
       ${games.map(renderGameCard).join("")}
-      <button class="holo-card new-card" data-act="new-game">
-        <span class="mini-dial">${icon("plus")}</span>
-        <span class="card-title">Novo mundo</span>
-        <span class="card-meta">Crie uma nova aventura</span>
-      </button>
+
     </div>`;
   }
 
@@ -93,7 +84,7 @@ export function renderLibrary(state) {
       ${holoFx()}
       <header class="holo-bar">
         ${iconBtn({ act: "go-menu", icon: "chevronLeft", label: "Menu principal" })}
-        <span class="hud-tag">// AVENTURAS</span>
+        <span class="hud-tag">// CENÁRIOS E AVENTURAS</span>
         ${help("library")}
         ${hudStat(backendOnline)}
         <button class="holo-btn lib-import" data-act="import-game" title="Importar uma aventura exportada (modelo ou ponto salvo)" ${state.importing ? "disabled" : ""}>
@@ -102,7 +93,11 @@ export function renderLibrary(state) {
         <input type="file" id="importFile" accept=".json,application/json" hidden aria-label="Arquivo de aventura exportada" />
         ${iconBtn({ act: "open-settings", icon: "settings", label: "Configurações" })}
       </header>
-      <main class="lib-main">${body}</main>
+      <main class="lib-main">
+        ${backendOnline ? renderScenarioLibrary(state.scenarios || [], state.scenariosError) : ""}
+        <section class="library-section" aria-labelledby="adventureHeading"><h2 id="adventureHeading">Aventuras</h2>${body}</section>
+      </main>
+      ${state.scenarioStart ? renderScenarioStart(state.scenarioStart) : ""}
       ${state.confirm ? renderConfirm(state.confirm) : ""}
       ${state.exportChoice ? renderExportChoice(state.exportChoice) : ""}
     </div>`;
@@ -206,9 +201,9 @@ export function renderCreator(state) {
                  ${c.busy ? "disabled" : ""} />
           <button class="holo-btn" type="submit" ${c.busy ? "disabled" : ""}>${icon("send")}<span>Enviar</span></button>
         </form>
-        <button class="holo-btn primary forge-begin" data-act="begin-adventure" ${c.busy || !c.ready ? "disabled" : ""}
-                title="${c.ready ? "Criar este mundo e começar" : "O criador de mundos libera esta opção quando o mundo estiver pronto"}">
-          ${icon("flame")}<span>${c.busy ? "Invocando..." : c.ready ? "Iniciar a aventura" : "Iniciar (ainda não está pronto)"}</span>
+        <button class="holo-btn primary forge-begin" data-act="save-scenario" ${c.busy || !c.ready ? "disabled" : ""}
+                title="${c.ready ? "Salvar as regras deste cenário" : "O criador de mundos libera esta opção quando o mundo estiver pronto"}">
+          ${icon("flame")}<span>${c.busy ? "Salvando..." : c.ready ? "Salvar cenário" : "Salvar cenário (ainda não está pronto)"}</span>
         </button>
       </footer>
       ${c.finalizing ? renderCrafting() : ""}
@@ -219,11 +214,9 @@ export function renderCreator(state) {
 // while: it builds scenes, characters, portraits, voices). Blocks the chat.
 export function renderCrafting() {
   const lines = [
-    "Preparando a cena inicial",
-    "Invocando personagens",
-    "Pintando o mundo",
-    "Conectando vozes",
-    "Acendendo o neon",
+    "Organizando a ambientação",
+    "Consolidando as regras",
+    "Salvando o cenário",
   ];
   return `
     <div class="craft-overlay" role="status" aria-live="polite">
@@ -235,7 +228,7 @@ export function renderCrafting() {
         <span class="craft-orbit slow"><span class="craft-spark alt"></span></span>
         <span class="craft-glyph">${icon("sigil")}</span>
       </div>
-      <h2 class="craft-title">Criando seu mundo</h2>
+      <h2 class="craft-title">Salvando seu cenário</h2>
       <div class="craft-status">
         ${lines.map((t, i) => `<span style="--i:${i}">${escapeHtml(t)}</span>`).join("")}
       </div>

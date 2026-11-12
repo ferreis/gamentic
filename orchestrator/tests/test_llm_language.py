@@ -75,3 +75,23 @@ def test_internal_image_calls_use_english_without_portuguese_override(monkeypatc
     assert llm.RESPONSE_LANGUAGE_INSTRUCTION not in serialized_messages
     assert llm.RESPONSE_LANGUAGE_REMINDER not in serialized_messages
     assert messages == original_messages
+
+
+@pytest.mark.parametrize("model_name, expected_switch", [("gamentic-qwen3:4b-16k", True), ("other-model", False)])
+def test_explicit_thinking_opt_out_is_scoped_and_preserves_history(monkeypatch, model_name, expected_switch):
+    from app.providers.base import ProviderConfig
+    configuration = ProviderConfig(modality="text", provider="local", base_url="http://model/v1", model=model_name,
+                                   supports_thinking=True)
+    monkeypatch.setattr(llm.providers, "resolve", lambda modality: configuration)
+    captured_payload = {}
+    def capture_post(endpoint, **request_options):
+        captured_payload.update(request_options["json"])
+        return httpx.Response(200, request=httpx.Request("POST", endpoint), json={
+            "choices": [{"message": {"content": "Resumo direto."}}],
+        })
+    monkeypatch.setattr(llm.httpx, "post", capture_post)
+    messages = [{"role": "user", "content": "Resuma os fatos."}]
+    llm.chat(messages, thinking=False)
+    assert captured_payload["chat_template_kwargs"] == {"enable_thinking": False}
+    assert captured_payload["messages"][-1]["content"].endswith("/no_think") is expected_switch
+    assert messages == [{"role": "user", "content": "Resuma os fatos."}]

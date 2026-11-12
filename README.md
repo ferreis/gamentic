@@ -35,6 +35,13 @@ Pannable, clickable maps of the agents, the engine, the state, the infra and the
 
 ## How a turn works
 
+### Cenários e memória da aventura
+
+- O criador define primeiro o **cenário**: a ambientação e as regras iniciais do mundo. Salvar um cenário não cria uma partida.
+- Na biblioteca, escolha **Nova aventura neste cenário** e descreva o personagem e a situação inicial. Cada início cria uma aventura independente. O cenário pode ser reutilizado sem herdar progresso, inventário ou memórias de outras partidas.
+- O contexto enviado ao modelo combina estado atual, resumo persistente e acontecimentos recentes. Trechos antigos são resumidos em lotes antes de sair do contexto; o histórico completo continua no SQLite. Personagens recebem apenas suas próprias memórias.
+- Configure `LLM_CONTEXT_SIZE` com a janela real do servidor. No Ollama, ela deve acompanhar o `num_ctx` do modelo. `LLM_CTX` configura somente o servidor llama.cpp. O tamanho dos prompts é estimado com margem para ferramentas e resposta; resumos incompletos não substituem a memória válida.
+
 ```mermaid
 flowchart TD
     P["🎮 You act<br>(type freely, tap a button, or just Continue)"]

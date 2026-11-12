@@ -26,6 +26,8 @@ Composer submit (`app.js`) -> `api.takeAction` (or `api.continueStory`) -> WHILE
 | `src/app/profilectl.js` | Profile open/refetch and the in-place (flick-free) tab switch. |
 | `src/app/composerctl.js` | Composer modes, the current line as a segment, stacking, the public/private execute paths. |
 | `src/app/creatorctl.js` | Creator chat sessions, restore-on-entry, finalize. |
+| `src/app/scenarioctl.js` | Scenario selection, premise entry and independent adventure starts. |
+| `src/render/scenarios.js` | Reusable scenario cards and the adventure-start dialog. |
 | `src/app/speech.js` | Per-beat voice resolution + the speak-button state machine. |
 | `src/app/settingsctl.js` | FE-local settings + the per-game PATCH. |
 | `src/app/cues.js` | Transition notices, one-shot flashes, toasts, help popovers. |

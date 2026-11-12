@@ -41,6 +41,9 @@ class Settings:
     LLM_STREAM = os.getenv("LLM_STREAM", "true").lower() == "true"
     # The model's context window, for the context-usage meter (used/max shown in the UI).
     LLM_CONTEXT_SIZE = int(os.getenv("LLM_CONTEXT_SIZE", "131072"))
+    # Input is compacted before calls approach this fraction of the model window.
+    CONTEXT_COMPACT_AT = float(os.getenv("CONTEXT_COMPACT_AT", "0.75"))
+    CONTEXT_FOLD_BATCH_TOKENS = int(os.getenv("CONTEXT_FOLD_BATCH_TOKENS", "6000"))
 
     # Sampling belongs to the SERVER (owner 2026-07-25: "leave all default", "i dont like
     # toy with those values at all"). The nine per-call temperatures that used to live

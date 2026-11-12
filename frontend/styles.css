@@ -435,6 +435,15 @@ button { font: inherit; cursor: pointer; }
 /* ---- library (archive) ---- */
 .lib-main { position: relative; z-index: 2; flex: 1; min-height: 0; overflow-y: auto; padding: clamp(1.2rem, 4vw, 2.5rem); }
 .holo-grid { display: grid; gap: clamp(1rem, 2.5vw, 1.6rem); grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.library-section + .library-section { margin-top: 2.5rem; }
+.library-section > h2 { margin: 0 0 0.7rem; font-family: var(--font-display); font-size: 1.2rem; }
+.scenario-modal { width: min(680px, 92vw); max-height: 88dvh; overflow-y: auto; }
+.scenario-modal label { display: block; margin: 1rem 0 0.6rem; }
+.scenario-modal textarea { width: 100%; resize: vertical; margin-bottom: 1rem; }
+.scenario-modal .modal-actions { flex-wrap: wrap; }
+.scenario-rules { color: var(--ink-muted); line-height: 1.6; }
+.scenario-rules summary { cursor: pointer; color: var(--ink); }
+.scenario-rules p { white-space: pre-wrap; overflow-wrap: anywhere; }
 
 .holo-card {
   position: relative; display: flex; flex-direction: column; gap: 0.4rem; text-align: left;

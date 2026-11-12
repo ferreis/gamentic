@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 import httpx
 
 from .config import settings
+from . import context
 from .providers import base as providers
 
 _log = logging.getLogger("gamentic.llm")
@@ -93,6 +94,14 @@ def chat(
         if message.get("role") == "user" and isinstance(message.get("content"), str):
             message["content"] += "\n\n" + language_reminder
             break
+    # https://github.com/QwenLM/Qwen3/blob/main/docs/source/inference/transformers.md
+    # Qwen3's soft switch also works through Ollama's OpenAI endpoint.
+    # Honor explicit utility-call opt-outs without changing the narrator's mode.
+    if thinking is False and "qwen3" in cfg.model.lower():
+        for message in reversed(localized_messages):
+            if message.get("role") == "user" and isinstance(message.get("content"), str):
+                message["content"] += "\n/no_think"
+                break
     payload: dict = {
         "model": cfg.model,
         "messages": localized_messages,
@@ -110,6 +119,13 @@ def chat(
     # The guard is deliberately far above any real answer: it exists so a model stuck in
     # a repetition loop ends, not to shorten anything the model actually meant to write.
     cap = max_tokens if (max_tokens and max_tokens > 0) else settings.LLM_MAX_TOKENS
+    # The request also carries language instructions and, often, schemas. Reserve room
+    # for them before asking the provider to generate; a zero means there is no safe
+    # request rather than sending one guaranteed to hit the context wall.
+    available = context.available_output(localized_messages, tools, cap)
+    if available <= 0:
+        raise context.ContextLimitError("O contexto excede a janela configurada. O histórico foi preservado. Confira LLM_CONTEXT_SIZE e a janela do modelo no servidor.")
+    cap = available
     if cap and cap > 0:
         payload["max_tokens"] = cap
     if tools:
@@ -124,12 +140,12 @@ def chat(
         # engine builds its scaffold stops before the cast name-stops, so under any
         # truncation the scaffold guards survive and only name-stops fall off.
         payload["stop"] = stop[:cfg.max_stops] if cfg.max_stops > 0 else stop
-    if thinking and cfg.supports_thinking:
+    if thinking is not None and cfg.supports_thinking:
         # llama.cpp merges request-level chat_template_kwargs over the server-level ones,
         # so this enables hybrid-model reasoning for THIS call only. If the reply carries
         # message.reasoning_content, it is ignored: content stays the only consumed field.
         # Capability-gated: cloud OpenAI-dialect endpoints have no such kwarg.
-        payload["chat_template_kwargs"] = {"enable_thinking": True}
+        payload["chat_template_kwargs"] = {"enable_thinking": thinking}
 
     url = f"{cfg.base_url}/chat/completions"
     kwargs: dict = {"json": payload, "timeout": settings.LLM_TIMEOUT}

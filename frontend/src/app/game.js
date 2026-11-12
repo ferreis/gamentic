@@ -20,6 +20,13 @@ export async function refreshLibrary() {
     state.backendOnline = true;
     state.backendError = "";
     state.games = (res && res.games) || [];
+    try {
+      const scenarioResponse = await api.listScenarios();
+      state.scenarios = scenarioResponse?.scenarios || [];
+      state.scenariosError = "";
+    } catch (error) {
+      state.scenariosError = error.message || "Não foi possível carregar os cenários.";
+    }
   } catch (err) {
     state.backendOnline = false;
     state.backendError = err.message || "unreachable";
@@ -41,6 +48,8 @@ export async function wipeEverything() {
     state.active = null;
     state.confirm = null;
     state.exportChoice = null;
+    state.scenarios = [];
+    state.scenarioStart = null;
     clearCreatorSession();
     resetCreator();
     state.wipe = null;

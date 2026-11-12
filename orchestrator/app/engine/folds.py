@@ -1,14 +1,13 @@
 """Background memory folds: the rolling game recap and the per-character witnessed
-recaps. Scheduled after turns by main.py; each fold is one LLM call, stale-guarded."""
-from .. import db, repo, prompts, llm
+recaps. Scheduled after turns by main.py; each fold uses bounded batches and stale guards."""
+from .. import db, repo, prompts, context
 from ..config import settings
-from . import parsing
 
 
 def maybe_update_summary(gid: str) -> None:
     """Background (scheduled after turns): fold story older than the newest turns into
     the rolling facts-only recap, so the narrator always knows the WHOLE story at a
-    bounded token cost. One LLM call per fold; failures keep the previous recap and
+    bounded token cost. Failures keep the previous recap and
     retry on a later turn. Characters have their own folds (witnessed beats only):
     maybe_update_character_summaries below."""
     if not settings.SUMMARY_ENABLED:
@@ -20,24 +19,21 @@ def maybe_update_summary(gid: str) -> None:
         latest = repo.next_turn_index(conn, gid) - 1
         done_through = g["summarized_through"] or 0
         target = latest - settings.SUMMARY_KEEP_TURNS
-        if target - done_through < repo.effective_summary_every(g):
-            return
         rows = repo.beats_between(conn, gid, done_through, target)
+        pressure = context.estimate_tokens([{"role": "user", "content": (g["story_summary"] or "") + "\n" + "\n".join(prompts._render_beat(row) for row in rows)}]) >= int(settings.LLM_CONTEXT_SIZE * settings.CONTEXT_COMPACT_AT)
+        if target - done_through < repo.effective_summary_every(g) and not pressure:
+            return
         if not rows:
             return
         prev = (g["story_summary"] or "").strip()
         transcript = "\n".join(prompts._render_beat(b) for b in rows)
     try:
-        reply = llm.chat(prompts.build_summary_messages(prev, transcript),
-                         max_tokens=settings.SUMMARY_MAX_TOKENS)
+        text = context.summarize(prev, [transcript], prompts.build_summary_messages)
     except Exception:
         return
     # Drift safety: junk, think spans and scaffold never become memory. A recap is
     # re-fed to prompts every turn, so one leak compounds (e2e 2026-06-11: the turn-53
     # scaffold bytes passed the old clean_prose-only scrub verbatim).
-    text = parsing.scrub_model_text(reply.content or "")
-    if not text:
-        return
     with db.get_conn() as conn:
         g = repo.get_game(conn, gid)
         # the window must not have moved while the LLM ran: a concurrent fold or a
@@ -70,25 +66,25 @@ def maybe_update_character_summaries(gid: str) -> None:
             if target <= done:
                 continue
             rows = repo.witnessed_beats_between(conn, gid, c["id"], done, target)
-            if len(rows) < settings.CHAR_SUMMARY_EVERY:
+            pressure = context.estimate_tokens([{"role": "user", "content": (c["memory_summary"] or "") + "\n" + "\n".join(prompts._render_beat(row) for row in rows)}]) >= int(settings.LLM_CONTEXT_SIZE * settings.CONTEXT_COMPACT_AT)
+            if len(rows) < settings.CHAR_SUMMARY_EVERY and not pressure:
                 continue
+            character_target = target
             folds.append({"cid": c["id"], "name": c["name"], "done": done,
                           "prev": (c["memory_summary"] or "").strip(),
+                          "target": character_target,
                           "transcript": "\n".join(prompts._render_beat(b) for b in rows)})
     for f in folds:
         try:
-            reply = llm.chat(
-                prompts.build_character_summary_messages(f["name"], f["prev"], f["transcript"]),
+            text = context.summarize(f["prev"], [f["transcript"]],
+                lambda summary, transcript: prompts.build_character_summary_messages(f["name"], summary, transcript),
                 max_tokens=settings.CHAR_SUMMARY_MAX_TOKENS)
         except Exception:
             continue   # keep the previous recap; a later turn retries
         # same full scrub as the game recap: junk/think/scaffold never becomes memory
-        text = parsing.scrub_model_text(reply.content or "")
-        if not text:
-            continue
         with db.get_conn() as conn:
             c = repo.get_character(conn, f["cid"])
             # stale-fold guard (same as the game recap): if a rival fold or a history
             # reset moved this character's cursor while the LLM ran, skip the write
             if c and (c["summarized_through"] or 0) == f["done"]:
-                repo.set_character_summary(conn, f["cid"], text, target)
+                repo.set_character_summary(conn, f["cid"], text, f["target"])

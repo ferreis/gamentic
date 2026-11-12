@@ -14,7 +14,7 @@ Keep prompts lean. Q4 degrades on long context, so history and lore are budgeted
 import os
 import re
 
-from . import repo, constants
+from . import repo, constants, context
 
 PROMPT_DIR = os.path.join(os.path.dirname(__file__), "..", "prompts")
 
@@ -183,28 +183,15 @@ def _situation_blocks(conn, gid: str) -> str:
     return ("\n\n" + "\n\n".join(blocks)) if blocks else ""
 
 
-def _fit_token_budget(history, token_budget: int):
-    """Trim the verbatim transcript to roughly fit the game's narrator token budget
-    (the recap carries everything older). Newest beats win; ~4 chars per token, and
-    the transcript gets ~60% of the budget (state block, rules and lore take the rest)."""
-    if not token_budget:
-        return history
-    budget_chars = int(token_budget * 4 * 0.6)
-    total, kept = 0, []
-    for b in reversed(history):
-        total += len(b["text"] or "") + 16
-        if total > budget_chars and kept:
-            break
-        kept.append(b)
-    return list(reversed(kept))
-
-
 def build_narrator_messages(conn, gid: str, action: str, history_limit: int, lore_budget: int,
                             attempts: list[str] | None = None,
                             looking: bool = False, wish: str | None = None) -> list[dict]:
     g = repo.get_game(conn, gid)
     history = repo.recent_beats(conn, gid, history_limit)
-    history = _fit_token_budget(history, repo.effective_context_tokens(g))
+    context_override = repo.effective_context_tokens(g)
+    history_budget = int(context.settings.LLM_CONTEXT_SIZE * context.settings.CONTEXT_COMPACT_AT * .45)
+    if context_override:
+        history_budget = min(history_budget, int(context_override * .6))
     focus = action + " " + " ".join(_render_beat(b) for b in history[-4:])
 
     situation = _situation_blocks(conn, gid)
@@ -241,6 +228,15 @@ def build_narrator_messages(conn, gid: str, action: str, history_limit: int, lor
                       f'"""\n{wish.strip()}\n"""\n')
     # The rolling recap: everything OLDER than the verbatim window, compressed to facts.
     # The narrator knows the WHOLE story every turn at a bounded token cost.
+    from .tools import narrator_tools
+    fixed_messages = [{"role": "system", "content": system}, {"role": "user", "content":
+        action + attempts_block + wish_block + (g["story_summary"] or "")}]
+    fixed_tokens = context.estimate_tokens(fixed_messages,
+        narrator_tools(adjudicating=bool(attempts), images=context.settings.IMAGE_ENABLED))
+    history_budget = min(history_budget, max(128,
+        int(context.settings.LLM_CONTEXT_SIZE * context.settings.CONTEXT_COMPACT_AT) - fixed_tokens - 256))
+    history = context.prepare_beats(conn, gid, history, history_budget)
+    g = repo.get_game(conn, gid)
     summary = (g["story_summary"] or "").strip() if "story_summary" in g.keys() else ""
     summary_block = ""
     if summary:
@@ -399,6 +395,14 @@ def build_character_messages(conn, gid: str, character, history_limit: int,
     # WHAT YOU REMEMBER rides the user message ABOVE the scene window (the narrator's
     # recap pattern): their private folded recap, then the newest curated pivotal moments
     # with their story-clock labels. Rendered only when there is content.
+    from .tools import character_tools
+    fixed_messages = [{"role": "system", "content": system}, {"role": "user", "content":
+        (character["memory_summary"] or "") + str(repo.character_moments(character)[-8:]) + (impulse or "")}]
+    fixed_tokens = context.estimate_tokens(fixed_messages, character_tools(images=context.settings.IMAGE_ENABLED))
+    history_budget = min(int(context.settings.LLM_CONTEXT_SIZE * context.settings.CONTEXT_COMPACT_AT * .45),
+                         max(128, int(context.settings.LLM_CONTEXT_SIZE * context.settings.CONTEXT_COMPACT_AT) - fixed_tokens - 256))
+    scene = context.prepare_beats(conn, gid, scene, history_budget, character=character)
+    character = repo.get_character(conn, character["id"])
     memory = (character["memory_summary"] or "").strip() if "memory_summary" in character.keys() else ""
     moments = repo.character_moments(character)[-8:]
     mem_lines = [memory] if memory else []
@@ -621,8 +625,10 @@ def build_image_prompt_messages(context: str) -> list[dict]:
 
 # ---------- story creator ----------
 
-def build_creator_messages(history: list[dict], message: str) -> list[dict]:
+def build_creator_messages(history: list[dict], message: str, summary: str = "") -> list[dict]:
     msgs = [{"role": "system", "content": render("creator.system.md")}]
+    if summary:
+        msgs.append({"role": "system", "content": "RESUMO CONFIRMADO DA ENTREVISTA ANTERIOR:\n" + summary})
     msgs.extend(history)
     msgs.append({"role": "user", "content": message})
     return msgs
@@ -647,8 +653,8 @@ READY_TOOL = [{
     "type": "function",
     "function": {
         "name": "world_ready",
-        "description": "Signal that the world is complete enough to play. This call is what "
-                       "unlocks the player's begin button. Call it alongside your reply text, "
+        "description": "Signal that the reusable world and its rules are ready to save as a scenario. This call "
+                       "unlocks the save-scenario button. Call it alongside your reply text, "
                        "never instead of it.",
         "parameters": {
             "type": "object",

@@ -1,0 +1,5 @@
+Você está iniciando UMA NOVA aventura a partir de um cenário salvo. O cenário descreve apenas as regras e a situação inicial do mundo. Respeite suas regras e limites como cânone, mesmo quando a premissa pedir algo incompatível. Adapte a premissa ao cânone e não mude o cenário.
+
+Crie a cena inicial, os personagens, os conflitos e as missões desta aventura a partir da premissa fornecida. Comece do zero: não há histórico, memórias, conquistas ou progresso de outras aventuras. Cada chamada cria uma aventura independente. Não consulte nem reproduza partidas anteriores. Chame save_world exatamente uma vez. Escreva em português do Brasil.
+
+Gere apenas o estado necessário para começar a jogar. Não reescreva a ambientação, as regras, o tom, o estilo visual ou a voz do narrador: o sistema já os copiará do cenário salvo. Não desenvolva antecipadamente toda a história ou os eventos futuros. A cena de abertura deve ser curta e concreta; os personagens e as missões devem se limitar aos necessários nessa situação inicial.

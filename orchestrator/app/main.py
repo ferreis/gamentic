@@ -15,7 +15,7 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 
-from . import db, repo, engine, creator, integrate, media, prompts, llm, constants, transfer
+from . import db, repo, engine, creator, integrate, media, prompts, llm, constants, transfer, scenarios, context
 from .engine import live
 from .integrate import events as game_events
 from .integrate import regeneration
@@ -23,7 +23,7 @@ from .config import settings
 from .providers import resolve, voice_enabled
 from .providers import audio as audio_providers
 from .art_settings import router as art_settings_router
-from .models import (WorldSheet, ActionIn, ContinueIn, CreateMessageIn, GameState,
+from .models import (WorldSheet, ScenarioSheet, ScenarioStartIn, ActionIn, ContinueIn, CreateMessageIn, GameState,
                      GameSettingsIn, SpeakIn, TurnOut, ViewIn, ExplainIn)
 
 
@@ -38,6 +38,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Gamentic Orchestrator", version="0.1", lifespan=lifespan)
 app.include_router(art_settings_router)
+
+
+@app.exception_handler(context.ContextLimitError)
+async def context_limit_error(request, exc):
+    return JSONResponse({"detail": str(exc)}, status_code=409)
 
 
 # An unhandled exception escapes PAST the CORS middleware to Starlette's own
@@ -109,6 +114,48 @@ def list_games():
     with db.get_conn() as conn:
         rows = repo.list_games(conn)
     return {"games": [dict(r) for r in rows]}
+
+
+@app.get("/scenarios")
+def list_scenarios():
+    with db.get_conn() as conn:
+        return {"scenarios": scenarios.list_scenarios(conn)}
+
+
+@app.post("/scenarios")
+def save_scenario(sheet: ScenarioSheet):
+    with db.get_conn() as conn:
+        return {"scenario_id": scenarios.save(conn, sheet)}
+
+
+@app.get("/scenarios/{scenario_id}")
+def get_scenario(scenario_id: str):
+    with db.get_conn() as conn:
+        scenario = scenarios.get(conn, scenario_id)
+    if scenario is None:
+        raise HTTPException(404, "Cenário não encontrado.")
+    return scenario
+
+
+@app.post("/scenarios/{scenario_id}/start")
+def start_scenario(scenario_id: str, body: ScenarioStartIn, background_tasks: BackgroundTasks):
+    scenario = get_scenario(scenario_id)
+    try:
+        sheet = scenarios.adventure_sheet(scenario, body.premise)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc))
+    return create_game(sheet, background_tasks)
+
+
+@app.post("/create/scenario")
+def create_scenario(body: dict):
+    session_id = body.get("session_id")
+    if not isinstance(session_id, str) or not session_id.strip():
+        raise HTTPException(400, "Informe a sessão de criação.")
+    try:
+        return {"scenario_id": scenarios.finalize(session_id)}
+    except ValueError as exc:
+        raise HTTPException(409, str(exc))
 
 
 @app.get("/games/{gid}/export")
@@ -240,6 +287,7 @@ def wipe_everything(confirm: str = ""):
         for gid in gids:
             repo.delete_game(conn, gid)
         conn.execute("DELETE FROM creator_sessions")
+        conn.execute("DELETE FROM scenarios")
     folders = integrate.delete_all_media()           # all folders, orphans included
     integrate.release_game_voices(char_ids)
     # best-effort service purges AFTER our own state is gone: a dead media service

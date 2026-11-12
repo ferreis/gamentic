@@ -26,6 +26,9 @@ export function setTorn(v) {
 export const state = {
   view: "menu", // menu | library | creator | play | settings
   games: [], // raw library entries from GET /games
+  scenarios: [],
+  scenariosError: "",
+  scenarioStart: null,
   backendOnline: false,
   backendError: "",
   active: null, // { id, state(mapped), beats(mapped), generating, composer, profile, give, revealedArt }

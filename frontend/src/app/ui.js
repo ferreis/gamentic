@@ -6,10 +6,11 @@ import { Idiomorph } from "../../vendor/idiomorph.esm.js";
 import { markPmSeen } from "../adapters.js";
 import { renderApp } from "../render.js";
 import { executeComposer, executePrivate, setComposerMode, stackSegment, unstackSegment } from "./composerctl.js";
-import { beginAdventure, clearCreatorSession, enterCreator, resetCreator, sendCreatorMessage } from "./creatorctl.js";
+import { saveScenario, clearCreatorSession, enterCreator, resetCreator, sendCreatorMessage } from "./creatorctl.js";
 import { root, state, storyNearBottom, torn, voice } from "./ctx.js";
 import { showHelp } from "./cues.js";
 import { exportGame, importGameFile, markArtReveals, openGame, refreshLibrary, removeGame, wipeEverything } from "./game.js";
+import { closeScenario, selectScenario, startScenarioAdventure } from "./scenarioctl.js";
 import { stopMediaWatch } from "./mediastream.js";
 import { closeTagger, doExplain, doGive, onCharAction, openInspect, openTagger, takeSceneAction } from "./playctl.js";
 import { cycleProfileImage, openProfile, switchProfileTab } from "./profilectl.js";
@@ -192,6 +193,7 @@ function onRootSubmit(e) {
   const kind = form.dataset.form;
   if (kind === "action") executeComposer();
   else if (kind === "private") executePrivate();
+  else if (kind === "scenario-start") startScenarioAdventure();
   else if (kind === "creator") {
     const input = form.querySelector('[name="creatorText"]');
     sendCreatorMessage(input.value);
@@ -237,6 +239,7 @@ function onRootInput(e) {
   if (!t || !t.matches) return;
   if (t.matches('[data-setting][type="range"]')) return updateSetting(t);
   // the wish line survives re-renders via state (it is not a form of its own)
+  if (t.name === "adventurePremise" && state.scenarioStart) state.scenarioStart.premise = t.value;
   if (t.id === "wishInput" && state.active) state.active.wish = t.value;
 }
 
@@ -300,8 +303,14 @@ export function onAction(act, el) {
       state.view = state.settings._return || "library";
       render();
       break;
-    case "begin-adventure":
-      beginAdventure();
+    case "select-scenario":
+      selectScenario(el.dataset.scenarioId);
+      break;
+    case "close-scenario":
+      closeScenario();
+      break;
+    case "save-scenario":
+      saveScenario();
       break;
     case "speak-beat":
       speakBeat(el.dataset.beatId);
