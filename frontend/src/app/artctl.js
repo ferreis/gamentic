@@ -76,6 +76,11 @@ export async function regenerateAllImages() {
   game.imageRegenerationError = "";
   render();
   try {
+    if (game.artSelection && JSON.stringify(game.artSelection) !== JSON.stringify(game.artControls?.settings)) {
+      const saved = await api.saveArtSettings(game.artSelection);
+      game.artSelection = structuredClone(saved.settings);
+      if (game.artControls) game.artControls.settings = structuredClone(saved.settings);
+    }
     const progress = await api.regenerateImages(game.id);
     if (state.active !== game) return;
     game.imageRegeneration = progress;

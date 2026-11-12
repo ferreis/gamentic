@@ -5,6 +5,7 @@ from . import characters, clock, games, items, players, quests, scenes
 
 
 def game_state(conn, gid: str) -> dict:
+    from .. import choices
     g = games.get_game(conn, gid)
     p = players.get_player(conn, gid)
     quest_list = [quests.quest_dict(conn, q) for q in quests.get_quests(conn, gid)]
@@ -42,6 +43,7 @@ def game_state(conn, gid: str) -> dict:
     }
     return {
         "game_id": gid,
+        "action_choices": choices.available(conn, gid),
         "title": g["title"],
         "status": g["status"],
         "scene_status": sc["status"],

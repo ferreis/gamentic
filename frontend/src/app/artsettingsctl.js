@@ -52,6 +52,7 @@ export async function saveArtSettings() {
     const response = await api.saveArtSettings(game.artSelection);
     game.artSelection = structuredClone(response.settings);
     game.artSettingsMessage = "Arte salva. As próximas imagens usarão esta configuração.";
+    game.artControls.settings = structuredClone(response.settings);
   } catch (error) {
     game.artSettingsError = error.message || "Não foi possível salvar a arte.";
   } finally {

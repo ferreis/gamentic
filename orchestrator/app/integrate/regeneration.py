@@ -1,7 +1,10 @@
 """One background art regeneration per adventure, with progress and safe swaps."""
 import logging
 import threading
+import time
 import uuid
+
+import httpx
 
 from .. import db, media, repo
 from . import events, image_catalog
@@ -22,9 +25,23 @@ def reserve(game_id: str) -> tuple[dict, list[dict]]:
             raise ValueError("Já existe uma regeneração em andamento nesta aventura.")
         with db.get_conn() as connection:
             batches = image_catalog.collect_images(connection, game_id)
+            main_image = repo.current_scene(connection, game_id)["image_url"]
+        batches.sort(key=lambda batch: main_image not in batch["images"].values())
+        individual_images = []
+        scheduled_urls = set()
+        for batch in batches:
+            seed = uuid.uuid4().int % (2 ** 32)
+            for image_field, previous_url in batch["images"].items():
+                if previous_url in scheduled_urls:
+                    continue
+                scheduled_urls.add(previous_url)
+                individual_images.append({**batch, "images": {image_field: previous_url},
+                                          "view": image_field.removesuffix("_url"), "seed": seed})
+        batches = individual_images
         total = len({image_url for batch in batches for image_url in batch["images"].values()})
         job = {"id": uuid.uuid4().hex, "status": "running" if total else "completed",
-               "total": total, "completed": 0, "failed": 0, "skipped": 0}
+               "total": total, "completed": 0, "failed": 0, "skipped": 0,
+               "started_at": time.time(), "current_image": "", "last_error": ""}
         _jobs[game_id] = job
         return dict(job), batches
 
@@ -95,26 +112,36 @@ def run(game_id: str, batches: list[dict]) -> None:
             batch_size = len(set(batch["images"].values()))
             generated = None
             try:
+                _progress(game_id, current_image=f"Imagem {completed + failed + skipped + 1} de {job['total']}")
                 if batch["kind"] == "character":
-                    generated = media.generate_character_images(batch["descriptor"], style)
-                    if not generated or any(not generated.get(field) for field in batch["images"]):
-                        raise ValueError("A geração dos retratos não foi concluída.")
-                    replacements = {previous: generated[field] for field, previous in batch["images"].items()}
+                    generated = media.generate_character_view(batch["descriptor"], batch["view"], style=style, seed=batch["seed"])
+                    if not generated or not generated.get("image_url"):
+                        raise ValueError("A geração do retrato não foi concluída.")
+                    replacements = {previous: generated["image_url"] for previous in batch["images"].values()}
                 else:
                     previous_url = batch["images"]["image_url"]
                     prompt, width, height = image_catalog.image_recipe(game_id, previous_url, batch["prompt"])
                     generated = media.generate_scene_image(
                         f"RECREATE THESE SUBJECTS AND COMPOSITION: {prompt}",
-                        width=width, height=height, style=style)
+                        width=width, height=height, style=style, raise_errors=True)
                     if not generated or not generated.get("image_url"):
                         raise ValueError("A geração da imagem não foi concluída.")
                     replacements = {previous_url: generated["image_url"]}
                 updated = _store_replacements(game_id, job["id"], replacements)
                 completed += updated
                 skipped += batch_size - updated
-            except Exception:
+            except Exception as error:
                 failed += batch_size
                 _log.exception("Image regeneration failed for %s", game_id)
+                reason = str(error)
+                if isinstance(error, httpx.HTTPStatusError):
+                    try:
+                        reason = str(error.response.json().get("detail") or error.response.status_code)
+                    except (ValueError, AttributeError):
+                        reason = f"O gerador respondeu com erro {error.response.status_code}."
+                elif isinstance(error, httpx.TimeoutException):
+                    reason = "O gerador ultrapassou o tempo de espera configurado. A imagem anterior foi mantida."
+                _progress(game_id, last_error=reason[:400])
             finally:
                 generated_urls = {generated.get(field) for field in (
                     "image_url", "face_url", "body_front_url", "body_side_url") if generated and generated.get(field)}
@@ -124,7 +151,7 @@ def run(game_id: str, batches: list[dict]) -> None:
                 for image_url in unused_generated:
                     media.delete_staging_image(image_url)
             _progress(game_id, completed=completed, failed=failed, skipped=skipped)
-        _progress(game_id, status="completed" if not failed else "partial")
+        _progress(game_id, status="completed" if not failed else "partial", current_image="")
     except Exception:
         _log.exception("Image regeneration interrupted for %s", game_id)
         _progress(game_id, status="failed", completed=completed, failed=failed)

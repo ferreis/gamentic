@@ -76,5 +76,9 @@ export function applyMemorySetting(el) {
   const valid = Number.isFinite(n) && (n === 0 || (n >= range[0] && n <= range[1]));
   el.classList.toggle("invalid", !valid);
   if (!valid) return; // out of range: nothing is sent
+  const memorySettings = state.active?.state?.settings || {};
+  const currentSettings = { history_beats: memorySettings.historyBeats || 0,
+    summary_every: memorySettings.summaryEvery || 0, context_tokens: memorySettings.contextTokens || 0 };
+  if (n === currentSettings[key]) return;
   patchGameSettings(key, n);
 }

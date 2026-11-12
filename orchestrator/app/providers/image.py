@@ -89,6 +89,13 @@ class ImageProvider:
                 "body_side_url": (side or {}).get("image_url"),
                 "seed": seed}
 
+    def character_view(self, descriptor: str, view: str, style: str = "", seed: int | None = None) -> dict | None:
+        templates = {"face": _FACE_VIEW, "body_front": _FRONT_VIEW, "body_side": _SIDE_VIEW}
+        if view not in templates:
+            raise ValueError("Vista de personagem inválida.")
+        styled = f"{descriptor}. {style}".strip(". ") if style else descriptor
+        return self.generate(templates[view].format(d=styled), _FACE_SIZE if view == "face" else _BODY_SIZE, seed=seed)
+
 
 class ComfyProvider(ImageProvider):
     """Our image-api contract (template adapter in front of ComfyUI). The tested
@@ -117,6 +124,15 @@ class ComfyProvider(ImageProvider):
                        timeout=max(300, 3 * settings.IMAGE_GENERATE_TIMEOUT))
         r.raise_for_status()
         return r.json()
+
+    def character_view(self, descriptor, view, style="", seed=None):
+        body = {"descriptor": descriptor, "style": style, "views": [view]}
+        if seed is not None:
+            body["seed"] = seed
+        response = httpx.post(f"{self.cfg.base_url}/image/character", json=body,
+                              timeout=settings.IMAGE_GENERATE_TIMEOUT)
+        response.raise_for_status()
+        return {"image_url": response.json().get(f"{view}_url"), "seed": seed}
 
 
 class OpenAIProvider(ImageProvider):

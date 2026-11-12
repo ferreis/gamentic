@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS games (
                                      -- consumed into the pack at creation, kept here so a template
                                      -- export can restate the world as designed, not as played
     opening_time_of_day TEXT DEFAULT '',  -- the DESIGNED opening clock part, same reason
+    action_choices TEXT DEFAULT '{}', -- narrator suggestions scoped to the current scene
     created_at TEXT DEFAULT (datetime('now'))
 );
 
@@ -237,6 +238,7 @@ _MIGRATIONS = {
         "last_tool_errors": "TEXT DEFAULT '[]'",  # narrator's failed-call note (JSON list of reasons)
         "opening_items": "TEXT DEFAULT '[]'",     # designed opening possessions (template export)
         "opening_time_of_day": "TEXT DEFAULT ''",  # designed opening clock part (template export)
+        "action_choices": "TEXT DEFAULT '{}'",
     },
     "beats": {
         "private_with": "TEXT",

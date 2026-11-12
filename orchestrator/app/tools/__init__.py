@@ -35,6 +35,7 @@ _NARRATOR_ORDER = [
     "offer_action", "offer_scene_action", "give_item",
     "note_trait", "note_scene", "advance_time",
     "reveal_origin", "note_moment", "set_relation",   # appended (schema order is stable; new tools go at the end)
+    "suggest_actions",
 ]
 NARRATOR_TOOLS = [SCHEMAS[n] for n in _NARRATOR_ORDER]
 

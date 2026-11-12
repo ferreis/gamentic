@@ -436,6 +436,13 @@ button { font: inherit; cursor: pointer; }
 .lib-main { position: relative; z-index: 2; flex: 1; min-height: 0; overflow-y: auto; padding: clamp(1.2rem, 4vw, 2.5rem); }
 .holo-grid { display: grid; gap: clamp(1rem, 2.5vw, 1.6rem); grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 .library-section + .library-section { margin-top: 2.5rem; }
+.turn-choices { margin: 1.8rem 0 0.7rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+.turn-choices h2 { font-size: 1rem; margin: 0 0 0.5rem; }
+.turn-choices > p { color: var(--ink-muted); font-size: 0.9rem; margin: 0 0 1rem; }
+.turn-choices ol { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 0.65rem; list-style: none; padding: 0; margin: 0; }
+.turn-choice { width: 100%; height: 100%; padding: 0.8rem; border: 1px solid var(--line); background: var(--surface-panel); color: var(--ink); text-align: left; cursor: pointer; line-height: 1.5; overflow-wrap: anywhere; }
+.turn-choice:hover, .turn-choice:focus-visible { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+.choice-mode { display: block; color: var(--ink-muted); font-size: 0.8rem; }
 .library-section > h2 { margin: 0 0 0.7rem; font-family: var(--font-display); font-size: 1.2rem; }
 .scenario-modal { width: min(680px, 92vw); max-height: 88dvh; overflow-y: auto; }
 .scenario-modal label { display: block; margin: 1rem 0 0.6rem; }

@@ -39,3 +39,5 @@ Your reply is ONLY the prose: Glass sprays across the bar. The room goes quiet, 
 
 GAME STATE:
 {{state}}{{lore}}
+
+After resolving the player's current action, call suggest_actions once with exactly five different, short next actions or spoken replies. Base them on the CURRENT scene and only player-discovered facts, never secret knowledge. Use mode do for an intended action or say for the player's exact spoken words. Propose choices; never perform them or decide for the player. The player may always ignore them and write freely. Keep suggestions out of the narration text: the interface renders the tool's list separately.

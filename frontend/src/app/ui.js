@@ -160,6 +160,11 @@ export function delegate() {
   root.addEventListener("keydown", onRootKeydown);
   root.addEventListener("change", onRootChange);
   root.addEventListener("input", onRootInput);
+  root.addEventListener("focusout", onRootFocusOut);
+}
+
+function onRootFocusOut(event) {
+  if (event.target.matches?.("[data-mem-setting]")) applyMemorySetting(event.target);
 }
 
 function onRootClick(e) {
@@ -272,6 +277,14 @@ export function onAction(act, el) {
     case "continue-game":
       openGame(gameId);
       break;
+    case "choose-action": {
+      if (!state.active || state.active.generating || state.active.revealing) break;
+      const choiceIndex = Number(el.dataset.choiceIndex);
+      if (!Number.isInteger(choiceIndex) || choiceIndex < 0) break;
+      const selectedChoice = state.active.state?.actionChoices?.[choiceIndex];
+      if (selectedChoice) takeTurn([{ type: selectedChoice.mode, text: selectedChoice.text }]);
+      break;
+    }
     case "ask-delete":
       state.confirm = { gameId, title: el.dataset.gameTitle || "this adventure" };
       render();
@@ -456,6 +469,7 @@ export function onAction(act, el) {
 // deck should invite a click while the narrator works); lightbox, profiles,
 // settings and scrolling stay live.
 export const MUTATING_ACTS = new Set([
+  "choose-action",
   "scene-action",
   "exit",
   "take-item",

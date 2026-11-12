@@ -39,7 +39,7 @@ services:
       IMAGE_CHAR_BODY_HEIGHT: "576"
       IMAGE_MAX_DIM: "576"
       IMAGE_MAX_REFERENCES: "0"
-      IMAGE_GENERATE_TIMEOUT: "600"
+      IMAGE_GENERATE_TIMEOUT: "1800"
 
   kokoro:
     image: ghcr.io/remsky/kokoro-fastapi-cpu@sha256:f54c5960c2b9387f6349080a9944f8bc7e8cdb98a4ef9238cb0b0f9ff9795f44

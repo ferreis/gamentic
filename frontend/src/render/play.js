@@ -6,6 +6,7 @@ import { cardCorners, escapeHtml, help, holoFx, initials, titleCase, unreadBadge
 import { renderInspectModal } from "./inspect.js";
 import { renderProfile } from "./profile.js";
 import { renderStory } from "./story.js";
+import { renderTurnChoices } from "./choices.js";
 import { artImg, artLoading, avatarOrInitials, contextMeter, dispositionBadges, exitBtn, hpBar, iconBtn, modalShell, narratingDots, renderComposer, renderStack, renderViewPending, sceneActionBtn, sceneItemSlot, slotGrid, slotInner, slotTip } from "./widgets.js";
 
 export { renderViewPending };
@@ -41,6 +42,7 @@ export function renderPlay(state) {
           ${renderStory(g)}
           ${g.pendingView && !g.lastVia ? renderViewPending() : ""}
           ${locked ? renderNarrating(g) : ""}
+          ${renderTurnChoices(g, locked)}
         </main>
 
         <aside class="char-column">

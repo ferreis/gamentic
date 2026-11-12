@@ -1,6 +1,24 @@
 """Conditionally offered narrative tools: the adjudication veto and the moment renderer.
 Neither sits in the base narrator toolset; narrator_tools() adds them when they apply."""
-from .base import _invalid, tool
+from .base import _invalid, _result, tool
+
+
+@tool({"type": "function", "function": {
+    "name": "suggest_actions",
+    "description": "Offer exactly five distinct next actions or spoken replies for the player after this turn. Use only facts the player has discovered. Suggestions never execute actions. Include alternatives with different intentions; never expose secrets or guarantee success.",
+    "parameters": {"type": "object", "properties": {
+        "choices": {"type": "array", "minItems": 5, "maxItems": 5, "items": {
+            "type": "object", "properties": {
+                "label": {"type": "string", "maxLength": 160},
+                "text": {"type": "string", "maxLength": 500},
+                "mode": {"type": "string", "enum": ["do", "say"]},
+            }, "required": ["label", "text", "mode"]}},
+    }, "required": ["choices"]}}})
+def suggest_actions(conn, game_id, arguments, actor):
+    from .. import choices
+    if actor is not None or not choices.save(conn, game_id, arguments.get("choices")):
+        return _invalid("suggest_actions: supply five different nonempty actions with mode do or say")
+    return _result("state")
 
 
 @tool({"type": "function", "function": {

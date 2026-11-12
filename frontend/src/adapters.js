@@ -76,6 +76,9 @@ export function mapGameState(state = {}) {
     status: state.status || "active", // story FSM: active | won | lost
     sceneStatus: state.scene_status || (state.scene && state.scene.status) || null,
     currentGoal: state.current_goal || "",
+    actionChoices: (Array.isArray(state.action_choices) ? state.action_choices : [])
+      .filter(choice => choice && ["do", "say"].includes(choice.mode) && typeof choice.label === "string" && typeof choice.text === "string")
+      .slice(0, 5).map(choice => ({ label: choice.label, text: choice.text, mode: choice.mode })),
     narratorVoiceId: state.narrator_voice_id || null,
     // live game settings (PATCH /games/{id}/settings)
     settings: {

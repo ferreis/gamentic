@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
 const controls = vi.hoisted(() => ({
   state: { active: null, view: "settings" },
-  api: { regenerateImages: vi.fn(), imageRegenerationStatus: vi.fn(), getState: vi.fn(), getBeats: vi.fn(), characterProfile: vi.fn() },
+  api: { regenerateImages: vi.fn(), imageRegenerationStatus: vi.fn(), getState: vi.fn(), getBeats: vi.fn(), characterProfile: vi.fn(), saveArtSettings: vi.fn() },
   render: vi.fn(), showToast: vi.fn(),
 }));
 vi.mock("../src/app/ctx.js", () => ({ state: controls.state, api: controls.api }));
@@ -50,6 +50,18 @@ test("a failed start preserves existing images and unlocks the button", async ()
   expect(controls.state.active.imageRegenerationStarting).toBe(false);
   expect(controls.state.active.state.scene.imageUrl).toBe("/old-scene.png");
   expect(controls.state.active.imageRegenerationError).toBe("Gerador indisponível");
+});
+
+test("regeneration applies the selected art configuration before starting", async () => {
+  controls.state.active.artControls = { settings: { checkpoint: "old", loras: [] } };
+  controls.state.active.artSelection = { checkpoint: "selected", loras: [] };
+  controls.api.saveArtSettings.mockResolvedValue({ settings: { checkpoint: "selected", loras: [] } });
+  controls.api.regenerateImages.mockResolvedValue({ id: "saved-art", status: "completed", total: 0 });
+  controls.api.imageRegenerationStatus.mockResolvedValue({ id: "saved-art", status: "completed", total: 0 });
+  await regenerateAllImages();
+  expect(controls.api.saveArtSettings).toHaveBeenCalledWith({ checkpoint: "selected", loras: [] });
+  expect(controls.api.saveArtSettings.mock.invocationCallOrder[0]).toBeLessThan(controls.api.regenerateImages.mock.invocationCallOrder[0]);
+  expect(controls.state.active.artControls.settings.checkpoint).toBe("selected");
 });
 
 test("an old adventure response cannot cancel progress polling for the newly opened adventure", async () => {

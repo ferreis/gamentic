@@ -271,6 +271,19 @@ def test_character_requires_descriptor():
     assert resp.status_code == 422
 
 
+@respx.mock
+def test_one_requested_character_view_renders_only_one_image():
+    route = respx.post(f"{COMFY}/prompt").mock(return_value=httpx.Response(200, json={"prompt_id": "single-view"}))
+    respx.get(f"{COMFY}/history/single-view").mock(return_value=httpx.Response(200, json=_history_ok("single-view")))
+    response = client.post("/image/character", json={"descriptor": "a ranger", "views": ["body_side"], "seed": 42})
+    assert response.status_code == 200, response.text
+    assert route.call_count == 1
+    assert response.json()["body_side_url"]
+    assert response.json()["face_url"] is None
+    assert response.json()["body_front_url"] is None
+    assert client.post("/image/character", json={"descriptor": "a ranger", "views": ["invalid"]}).status_code == 422
+
+
 # --- Phase 2: reference conditioning ---------------------------------------------------
 
 REF_URL = "http://gamentic-orchestrator:8000/media/g1/char-7-front.png"

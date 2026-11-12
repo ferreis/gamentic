@@ -13,7 +13,7 @@ def isolated_images(monkeypatch, tmp_path):
     monkeypatch.setattr(settings, "GAMES_DATA_DIR", str(tmp_path))
     monkeypatch.setattr(settings, "IMAGE_ENABLED", True)
     monkeypatch.setattr(regeneration, "_jobs", {})
-    monkeypatch.setattr(media, "generate_character_images", lambda *arguments, **options: None)
+    monkeypatch.setattr(media, "generate_character_view", lambda *arguments, **options: None)
     monkeypatch.setattr(media, "generate_scene_image", lambda *arguments, **options: None)
     monkeypatch.setattr(media, "fetch_image_bytes", lambda image_url: b"replacement image")
     monkeypatch.setattr(media, "delete_staging_image", lambda image_url: None)
@@ -54,8 +54,8 @@ def test_regenerates_all_owners_including_shared_items_and_old_private_beats(cli
         return {"image_url": "/generated.png"}
 
     monkeypatch.setattr(media, "generate_scene_image", generate_scene)
-    monkeypatch.setattr(media, "generate_character_images", lambda *arguments, **options: {
-        "face_url": "/new-face", "body_front_url": "/new-front", "body_side_url": "/new-side"})
+    monkeypatch.setattr(media, "generate_character_view", lambda descriptor, view, **options: {
+        "image_url": f"/new-{view}"})
     response = client.post(f"/games/{game_id}/images/regenerate")
     assert response.status_code == 202
     progress = client.get(f"/games/{game_id}/images/regeneration").json()
@@ -152,3 +152,27 @@ def test_item_moved_during_generation_keeps_its_new_owner_and_quantity(client, w
         moved = json.loads(repo.get_character(connection, character_id)["inventory"])[0]
         assert moved["qty"] == 3
         assert moved["image_url"] != inventory[0]["image_url"]
+
+
+def test_portrait_progress_is_committed_per_image_even_if_one_view_fails(client, world, monkeypatch):
+    game_id = client.post("/games", json=world).json()["game_id"]
+    with db.get_conn() as connection:
+        character = repo.get_characters(connection, game_id)[0]
+        repo.set_character_images(connection, character["id"], face_url="/old-face", body_front_url="/old-front", body_side_url="/old-side")
+    observed = []
+    seeds = set()
+    def generate_view(descriptor, view, **options):
+        observed.append((view, regeneration.status(game_id)["completed"]))
+        seeds.add(options["seed"])
+        if view == "body_front":
+            raise ValueError("Erro específico na vista frontal")
+        return {"image_url": f"/new-{view}"}
+    monkeypatch.setattr(media, "generate_character_view", generate_view)
+    client.post(f"/games/{game_id}/images/regenerate")
+    assert observed == [("face", 0), ("body_front", 1), ("body_side", 1)]
+    assert len(seeds) == 1
+    progress = regeneration.status(game_id)
+    assert progress["completed"] == 2 and progress["failed"] == 1
+    assert "vista frontal" in progress["last_error"]
+    with db.get_conn() as connection:
+        assert repo.get_character(connection, character["id"])["body_front_url"] == "/old-front"

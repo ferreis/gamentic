@@ -144,15 +144,17 @@ class CharacterRequest(BaseModel):
     style: str = ""  # world art style/theme, prepended to every view
     seed: int | None = None
     steps: int | None = None
+    views: list[Literal["face", "body_front", "body_side"]] = Field(
+        default_factory=lambda: ["face", "body_front", "body_side"], min_length=1, max_length=3)
     # NOTE: no width/height here on purpose. Per-view sizes are owned by image-api
     # (face square, body tall) and configured via env, so one request size can't fit
     # both framings. See _character_views() / config.CHAR_*.
 
 
 class CharacterResponse(BaseModel):
-    face_url: str
-    body_front_url: str
-    body_side_url: str
+    face_url: str | None = None
+    body_front_url: str | None = None
+    body_side_url: str | None = None
     seed: int
 
 
@@ -313,6 +315,8 @@ async def character(req: CharacterRequest) -> CharacterResponse:
 
     urls: dict[str, str] = {}
     for view, spec in _character_views().items():
+        if view not in req.views:
+            continue
         _, ref = await _render(
             prompt=_compose(req.style, req.descriptor, spec.suffix),
             negative_prompt="",
@@ -324,9 +328,9 @@ async def character(req: CharacterRequest) -> CharacterResponse:
         urls[view] = _image_url(ref)
 
     return CharacterResponse(
-        face_url=urls["face"],
-        body_front_url=urls["body_front"],
-        body_side_url=urls["body_side"],
+        face_url=urls.get("face"),
+        body_front_url=urls.get("body_front"),
+        body_side_url=urls.get("body_side"),
         seed=seed,
     )
 

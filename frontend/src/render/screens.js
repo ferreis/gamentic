@@ -351,7 +351,7 @@ function renderMemorySettings(g) {
       <p class="set-note">O narrador relê a história recente palavra por palavra e resume automaticamente o conteúdo mais antigo. Use 0 para voltar ao padrão.</p>
       ${memRow("history_beats", st.historyBeats, "Profundidade da memória", "Quanto da história recente permanece literal (8-400). Mais profundidade traz mais continuidade e turnos mais lentos.", 8, 400, 4)}
       ${memRow("summary_every", st.summaryEvery, "Resumir automaticamente a cada N turnos", "Com que frequência capítulos antigos entram no resumo (2-50).", 2, 50, 1)}
-      ${memRow("context_tokens", st.contextTokens, "Orçamento de contexto (automático)", "Limite de leitura do narrador (4000-120000; 0 = desativado). Isso limita a demora do turno.", 4000, 120000, 1000)}
+      ${memRow("context_tokens", st.contextTokens, "Orçamento de contexto (automático)", `Limite de leitura dentro da janela do modelo (${g.state.context?.max || 0} tokens). Use 0 para gerenciamento automático. O histórico completo permanece salvo.`, 4000, Math.min(120000, g.state.context?.max || 120000), 1000)}
       ${contextMeter(g.state.context)}
     </section>`;
 }
@@ -436,6 +436,8 @@ function renderArtRegeneration(game) {
       ${running && total ? `<p class="set-note">${processed} de ${total} imagens processadas.</p>
       <progress aria-label="Progresso da regeneração" max="${total}" value="${processed}"></progress>` : ""}
       ${summary ? `<p class="set-note">${escapeHtml(summary)}</p>` : ""}
+      ${running && progress.current_image ? `<p class="set-note">${escapeHtml(progress.current_image)}. A imagem atual pode levar vários minutos.</p>` : ""}
+      ${progress.last_error ? `<p class="set-note" role="alert">${escapeHtml(progress.last_error)}</p>` : ""}
       ${game.imageRegenerationError ? `<p class="set-note">${escapeHtml(game.imageRegenerationError)}</p>` : ""}
       ${game.state.imagesEnabled === false ? `<p class="set-note">A geração de imagens está desativada.</p>` : ""}
     </div>

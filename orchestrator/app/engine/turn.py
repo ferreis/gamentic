@@ -382,6 +382,7 @@ def run_turn(conn, gid: str, action_text: str = "", segments=None,
     # Guarded: a caller already inside a transaction holds the lock via its writes.
     if not conn.in_transaction:
         conn.execute("BEGIN IMMEDIATE")
+    conn.execute("UPDATE games SET action_choices='{}' WHERE id=?", (gid,))
     turn = repo.next_turn_index(conn, gid)
     seq = 0
     new_beats: list[dict] = []

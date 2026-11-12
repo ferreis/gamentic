@@ -296,6 +296,7 @@ class SceneOut(BaseModel):
 
 class GameState(BaseModel):
     game_id: str
+    action_choices: list[dict] = Field(default_factory=list)
     title: str
     status: str = "active"        # story FSM
     scene_status: str = "calm"    # current scene mood FSM

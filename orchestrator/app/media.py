@@ -10,6 +10,7 @@ on any failure these return empty/None and the game stays fully playable text-on
 Gated by IMAGE_ENABLED / voice_enabled().
 """
 import base64
+import logging
 import threading
 from urllib.parse import parse_qs, urlsplit
 
@@ -167,6 +168,7 @@ def fetch_image_bytes(url: str | None) -> bytes | None:
     the active image provider's base) so we can persist it per-game."""
     if not url:
         return None
+
     try:
         if url.startswith("data:"):
             return base64.b64decode(url.split(",", 1)[1])
@@ -180,9 +182,20 @@ def fetch_image_bytes(url: str | None) -> bytes | None:
         return None
 
 
+def generate_character_view(descriptor: str, view: str, style: str = "", seed: int | None = None) -> dict | None:
+    """One portrait at a time for regeneration, retaining provider errors for the UI."""
+    if not settings.IMAGE_ENABLED or not descriptor.strip():
+        return None
+    if settings.IMAGE_PROMPT_WORDS > 0:
+        descriptor = compact_english_prompt(descriptor, settings.IMAGE_PROMPT_WORDS, style=style, character=True)
+        style = ""
+    with _RENDER_GATE:
+        return _provider().character_view(descriptor, view, style=style, seed=seed)
+
+
 def generate_scene_image(prompt: str, seed: int | None = None,
                          width: int | None = None, height: int | None = None,
-                         references: list[str] | None = None, style: str = "") -> dict | None:
+                         references: list[str] | None = None, style: str = "", raise_errors: bool = False) -> dict | None:
     """Returns {image_url, ...} or None. Optional; off the turn hot-path by default.
     width/height override the scene defaults (the 'See' snapshot uses a landscape frame).
     references are fetchable image URLs (characters' stored views): providers that
@@ -200,4 +213,7 @@ def generate_scene_image(prompt: str, seed: int | None = None,
                 prompt, (width or settings.IMAGE_SCENE_W, height or settings.IMAGE_SCENE_H),
                 seed=seed, references=references)
     except Exception:
+        logging.getLogger(__name__).exception("Image provider failed to generate a scene")
+        if raise_errors:
+            raise
         return None

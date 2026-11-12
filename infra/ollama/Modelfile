@@ -1,4 +1,4 @@
 FROM qwen3:4b-instruct-2507-q4_K_M
 
-# O criador envia o histórico completo; 4096 tokens não comportam a conversa.
-PARAMETER num_ctx 16384
+# Janela de leitura; o histórico completo continua salvo e é compactado automaticamente.
+PARAMETER num_ctx 32768
