@@ -15,7 +15,7 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 
-from . import db, repo, engine, creator, integrate, media, prompts, llm, constants, transfer, scenarios, context
+from . import db, repo, engine, creator, integrate, media, prompts, llm, constants, transfer, scenarios, context, choices
 from .engine import live
 from .integrate import events as game_events
 from .integrate import regeneration
@@ -252,6 +252,15 @@ def image_regeneration_status(gid: str):
         if not repo.get_game(conn, gid):
             raise HTTPException(404, "Aventura não encontrada.")
     return regeneration.status(gid)
+
+
+@app.post("/games/{gid}/choices")
+def generate_action_choices(gid: str):
+    with db.get_conn() as conn:
+        if not repo.get_game(conn, gid):
+            raise HTTPException(404, "Aventura não encontrada.")
+        proposed = choices.generate(conn, gid)
+        return {"action_choices": proposed, "action_choices_error": choices.generation_error(conn, gid)}
 
 
 @app.post("/games/{gid}/images/regenerate", status_code=202)

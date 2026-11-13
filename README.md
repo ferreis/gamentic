@@ -39,6 +39,7 @@ Pannable, clickable maps of the agents, the engine, the state, the infra and the
 
 - O criador define primeiro o **cenário**: a ambientação e as regras iniciais do mundo. Salvar um cenário não cria uma partida.
 - Na biblioteca, escolha **Nova aventura neste cenário** e descreva o personagem e a situação inicial. Cada início cria uma aventura independente. O cenário pode ser reutilizado sem herdar progresso, inventário ou memórias de outras partidas.
+- Ao fim do turno, uma IA dedicada gera cinco sugestões com base nos acontecimentos recentes e no que o jogador já sabe. As opções aparecem em lista vertical; o botão **5 opções** também abre a lista em uma janela no celular. A escrita livre permanece disponível. As sugestões ficam salvas até o próximo turno; se a geração falhar, é possível tentar novamente, sem opções fixas.
 - O contexto enviado ao modelo combina estado atual, resumo persistente e acontecimentos recentes. Trechos antigos são resumidos em lotes antes de sair do contexto; o histórico completo continua no SQLite. Personagens recebem apenas suas próprias memórias.
 - Configure `LLM_CONTEXT_SIZE` com a janela real do servidor. No Ollama, ela deve acompanhar o `num_ctx` do modelo. `LLM_CTX` configura somente o servidor llama.cpp. O tamanho dos prompts é estimado com margem para ferramentas e resposta; resumos incompletos não substituem a memória válida.
 

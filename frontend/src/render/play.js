@@ -6,7 +6,7 @@ import { cardCorners, escapeHtml, help, holoFx, initials, titleCase, unreadBadge
 import { renderInspectModal } from "./inspect.js";
 import { renderProfile } from "./profile.js";
 import { renderStory } from "./story.js";
-import { renderTurnChoices } from "./choices.js";
+import { renderChoicePicker, renderTurnChoices } from "./choices.js";
 import { artImg, artLoading, avatarOrInitials, contextMeter, dispositionBadges, exitBtn, hpBar, iconBtn, modalShell, narratingDots, renderComposer, renderStack, renderViewPending, sceneActionBtn, sceneItemSlot, slotGrid, slotInner, slotTip } from "./widgets.js";
 
 export { renderViewPending };
@@ -52,6 +52,7 @@ export function renderPlay(state) {
       </div>
 
       ${renderActionBar(g, s, locked)}
+      ${renderChoicePicker(g)}
       ${g.give ? renderGiveModal(s, g.give, locked) : ""}
       ${g.inspect ? renderInspectModal(s, g) : ""}
       ${g.profile ? renderProfile(s, g) : ""}
@@ -259,7 +260,11 @@ export function renderActionBar(g, s, locked) {
       <div class="player-inv">
         <span class="rail-label">${icon("gem")}<span>Você</span>${help("inventory")}</span>
         ${slotGrid(s.player.inventory, 6, "player-items", undefined, s.imagesEnabled)}
-        <span class="action-help">${help("action")}</span>
+        <span class="action-help">
+          ${s.actionChoices?.length ? `<button type="button" class="holo-btn choice-launcher" data-act="open-choice-picker"
+            title="Escolher uma das cinco sugestões" ${locked || g.revealing ? "disabled" : ""}>5 opções</button>` : ""}
+          ${help("action")}
+        </span>
       </div>
       ${renderStack(cmp.stack, "cmp")}
       <form class="action-form" data-form="action">
@@ -297,6 +302,8 @@ export function renderNarrating(g) {
       ? "lendo suas palavras..."
       : p.phase === "character"
         ? `${p.name || "alguém"} está respondendo...`
+        : p.phase === "choices"
+          ? "a IA está preparando cinco opções..."
         : "o narrador está escrevendo...";
   const stop = g && g.stopping
     ? `<button type="button" class="holo-btn small stop-btn" disabled>${icon("x")}<span>interrompendo...</span></button>`

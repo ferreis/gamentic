@@ -26,6 +26,7 @@ While the turn runs, `app/engine/live.py` mirrors it over the per-game SSE strea
 | `app/creator.py` | The story-creator chat sessions (persisted in SQLite) and world finalization. |
 | `app/scenarios.py` | Reusable initial world rules, scenario extraction and independent adventure openings. |
 | `app/context.py` | Prompt budgets, bounded memory folds and safe handoff from old history to persisted summaries. |
+| `app/choices.py` | Dedicated post-turn AI suggestions from player-visible context, cached per story version; no fixed alternatives. |
 | `app/llm.py` | The one llama.cpp client function, `chat()`. Blocking by default; callers passing `on_delta`/`cancel` get the streaming transport (same reply shape, live fragments, mid-generation abort). |
 | `app/config.py` | Every knob, env-overridable, with defaults. |
 | `app/constants.py` | The finite vocabularies (dispositions, moods, difficulties) the tools enforce. |

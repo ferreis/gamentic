@@ -72,6 +72,7 @@ export function createApi(backendUrl) {
     base,
     health: () => request("/health"),
     listGames: () => request("/games"),
+    generateChoices: (id) => request(`/games/${encodeURIComponent(id)}/choices`, { method: "POST", body: {}, timeout: LLM_TIMEOUT_MS }),
     listScenarios: () => request("/scenarios"),
     getScenario: (scenarioId) => request(`/scenarios/${encodeURIComponent(scenarioId)}`),
     startScenario: (scenarioId, premise) => request(`/scenarios/${encodeURIComponent(scenarioId)}/start`, {

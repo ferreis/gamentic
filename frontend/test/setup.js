@@ -12,6 +12,9 @@ const API = "http://localhost:8000";
 export const defaultHandlers = [
   http.get(`${API}/images/settings`, () => HttpResponse.json({ settings: { checkpoint: "", loras: [] }, checkpoints: [], loras: [] })),
   http.get(`${API}/health`, () => HttpResponse.json({ status: "ok" })),
+  http.post(`${API}/games/:id/choices`, () => HttpResponse.json({ action_choices: Array.from({ length: 5 }, (unused, choiceIndex) => ({
+    label: `Sugestão da IA ${choiceIndex + 1}`, text: `Ação contextual ${choiceIndex + 1}.`, mode: "do",
+  })) })),
   http.get(`${API}/games`, () => HttpResponse.json({ games: GAMES })),
   http.get(`${API}/scenarios`, () => HttpResponse.json({ scenarios: [] })),
   http.get(`${API}/games/:id/state`, () => HttpResponse.json(makeState())),

@@ -945,6 +945,9 @@ def run_turn(conn, gid: str, action_text: str = "", segments=None,
             seeded = " ".join(sentences[:2]).strip()[:400]
             if seeded:
                 repo.set_scene_description(conn, gid, seeded)
+    from .. import choices
+    live.phase(gid, "choices")
+    choices.generate(conn, gid, cancel=live.stop_event(gid))
     result = {"beats": new_beats, "state": repo.game_state(conn, gid), "spawned": spawned}
     if image_request:
         # caller schedules the slow render in the background; the look's text becomes

@@ -9,6 +9,7 @@ import { withVoice } from "./speech.js";
 import { lastTurnIndexOf } from "./turns.js";
 import { stopMediaWatch, watchMedia } from "./mediastream.js";
 import { focusComposer, render } from "./ui.js";
+import { loadActionChoices } from "./choicesctl.js";
 
 // ---------------------------------------------------------------------------
 // library
@@ -123,6 +124,7 @@ export async function openGame(gameId) {
     // joining a game seats you at the keyboard, same as a finished turn does
     // (live: activeElement was <body> on entry and the first action needed a click)
     if (state.active && state.view === "play") focusComposer("#cmpInput");
+    if (state.active && state.view === "play") loadActionChoices();
   }
 }
 

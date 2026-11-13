@@ -44,6 +44,7 @@ def game_state(conn, gid: str) -> dict:
     return {
         "game_id": gid,
         "action_choices": choices.available(conn, gid),
+        "action_choices_error": choices.generation_error(conn, gid),
         "title": g["title"],
         "status": g["status"],
         "scene_status": sc["status"],

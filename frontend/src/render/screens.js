@@ -341,7 +341,7 @@ function renderMemorySettings(g) {
   const memRow = (key, value, label, sub, min, max, step) => `
     <label class="set-row mem-row">
       <span class="set-label">${escapeHtml(label)}<small>${escapeHtml(sub)}</small></span>
-      <input type="number" class="holo-input mem-input" data-mem-setting="${key}" aria-label="${escapeHtml(label)}"
+      <input id="memory-${key}" type="number" class="holo-input mem-input" data-mem-setting="${key}" aria-label="${escapeHtml(label)}"
              value="${Number(value) || 0}" min="0" max="${max}" step="${step}" ${saving} />
     </label>`;
   return `

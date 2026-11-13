@@ -60,6 +60,9 @@ class FakeLLM:
         # default EMPTY: enrichment skips the write, so fixture origins stay untouched
         # in every test that does not opt in by setting fake.origin to a biography
         self.origin = llm.LLMReply(content="")
+        self.choices = llm.LLMReply(content="", tool_calls=[llm.ToolCall("suggest_actions", {"choices": [
+            {"label": f"Opção gerada {choice_index}", "text": f"Investigar o acontecimento {choice_index}.", "mode": "do"}
+            for choice_index in range(1, 6)]})])
         self.calls = []
 
     def __call__(self, messages, tools=None, tool_choice="auto", temperature=0.8,
@@ -85,6 +88,8 @@ class FakeLLM:
         return reply
 
     def _dispatch(self, sys, names):
+        if names == ["suggest_actions"]:
+            return self.choices
         if "save_world" in names:
             return self.finalize
         if "submit_segments" in names:               # input interpreter

@@ -17,6 +17,7 @@ import { cycleProfileImage, openProfile, switchProfileTab } from "./profilectl.j
 import { applyMemorySetting, patchGameSettings, updateSetting } from "./settingsctl.js";
 import { loadImageRegeneration, regenerateAllImages } from "./artctl.js";
 import { loadArtSettings, changeArtSetting, saveArtSettings } from "./artsettingsctl.js";
+import { loadActionChoices } from "./choicesctl.js";
 import { applySpeakStates, speakBeat } from "./speech.js";
 import { continueStory, stopTurn, takeTurn } from "./turns.js";
 
@@ -110,6 +111,9 @@ export function render() {
     // native radio-group unchecking stick. Free-typed surfaces are protected
     // separately (the composer callback below + the input snapshot).
     callbacks: {
+      beforeNodeMorphed: (node) => {
+        if (node === document.activeElement && node.matches?.("[data-mem-setting]") && !state.active?.settingsSaving) return false;
+      },
       // the composer contenteditables always RENDER empty; their live
       // children ARE the draft - a morph must never remove them
       beforeNodeRemoved: (node) => {
@@ -209,6 +213,26 @@ function onRootSubmit(e) {
 // Enter in a composer line = submit its form (the contenteditable line is
 // single-line; newlines have no meaning in a segment)
 function onRootKeydown(e) {
+  if (e.key === "Tab" && state.active?.choicePickerOpen) {
+    const dialogButtons = [...(root.querySelector(".choice-picker")?.querySelectorAll("button:not([disabled])") || [])];
+    const firstButton = dialogButtons[0];
+    const lastButton = dialogButtons.at(-1);
+    if (e.shiftKey && document.activeElement === firstButton) {
+      e.preventDefault();
+      lastButton?.focus();
+    } else if (!e.shiftKey && document.activeElement === lastButton) {
+      e.preventDefault();
+      firstButton?.focus();
+    }
+    return;
+  }
+  if (e.key === "Escape" && state.active?.choicePickerOpen) {
+    e.preventDefault();
+    state.active.choicePickerOpen = false;
+    render();
+    focusComposer("#cmpInput");
+    return;
+  }
   if (e.key !== "Enter") return;
   const input = e.target.closest && e.target.closest(".composer-input");
   if (!input) return;
@@ -277,11 +301,27 @@ export function onAction(act, el) {
     case "continue-game":
       openGame(gameId);
       break;
+    case "open-choice-picker":
+      if (!state.active || state.active.generating || state.active.revealing) break;
+      state.active.choicePickerOpen = true;
+      render();
+      root.querySelector('.choice-picker [data-act="choose-action"]')?.focus();
+      break;
+    case "generate-choices":
+      loadActionChoices();
+      break;
+    case "close-choice-picker":
+      if (!state.active) break;
+      state.active.choicePickerOpen = false;
+      render();
+      focusComposer("#cmpInput");
+      break;
     case "choose-action": {
       if (!state.active || state.active.generating || state.active.revealing) break;
       const choiceIndex = Number(el.dataset.choiceIndex);
       if (!Number.isInteger(choiceIndex) || choiceIndex < 0) break;
       const selectedChoice = state.active.state?.actionChoices?.[choiceIndex];
+      state.active.choicePickerOpen = false;
       if (selectedChoice) takeTurn([{ type: selectedChoice.mode, text: selectedChoice.text }]);
       break;
     }
